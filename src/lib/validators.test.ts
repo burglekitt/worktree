@@ -1,7 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as cli from "./cli.js";
 import * as git from "./git.js";
-import { isValidBranch, isValidCommand, isValidEmail } from "./validators.js";
+import {
+	isValidBranch,
+	isValidBranchName,
+	isValidCommand,
+	isValidEmail,
+} from "./validators.js";
 
 describe("isValidEmail", () => {
 	it.each`
@@ -103,6 +107,44 @@ describe("isValidBranch", () => {
 				expect(git.gitGetLocalBranches).toHaveBeenCalled();
 				expect(git.gitGetRemoteBranches).not.toHaveBeenCalled();
 			}
+		},
+	);
+});
+
+describe("isValidBranchName", () => {
+	it.each`
+		branchName               | expected                                            | description
+		${"main"}                | ${true}                                             | ${"valid simple branch name"}
+		${"feature/new-feature"} | ${true}                                             | ${"valid branch with slash"}
+		${"bugfix/fix-123"}      | ${true}                                             | ${"valid branch with numbers"}
+		${"release/v1.0.0"}      | ${true}                                             | ${"valid release branch"}
+		${"user/john-doe"}       | ${true}                                             | ${"valid branch with hyphens"}
+		${"feature_branch"}      | ${true}                                             | ${"valid branch with underscores"}
+		${"123-branch"}          | ${true}                                             | ${"valid branch starting with numbers"}
+		${""}                    | ${"Branch name cannot be empty"}                    | ${"empty string"}
+		${"   "}                 | ${"Branch name cannot be empty"}                    | ${"whitespace only"}
+		${".hidden"}             | ${"Branch name cannot start with a dot"}            | ${"starts with dot"}
+		${"feature..branch"}     | ${"Branch name cannot contain double dots"}         | ${"contains double dots"}
+		${"branch.."}            | ${"Branch name cannot end with double dots"}        | ${"ends with double dots"}
+		${"feature branch"}      | ${"Branch name cannot contain spaces"}              | ${"contains spaces"}
+		${"branch~1"}            | ${"Branch name contains invalid characters"}        | ${"contains tilde"}
+		${"branch^master"}       | ${"Branch name contains invalid characters"}        | ${"contains caret"}
+		${"branch:colon"}        | ${"Branch name contains invalid characters"}        | ${"contains colon"}
+		${"branch\\backslash"}   | ${"Branch name contains invalid characters"}        | ${"contains backslash"}
+		${"branch*star"}         | ${"Branch name contains invalid characters"}        | ${"contains asterisk"}
+		${"branch?question"}     | ${"Branch name contains invalid characters"}        | ${"contains question mark"}
+		${"branch[bracket"}      | ${"Branch name contains invalid characters"}        | ${"contains bracket"}
+		${"branch@at"}           | ${"Branch name contains invalid characters"}        | ${"contains at sign"}
+		${"branch."}             | ${"Branch name cannot end with a dot"}              | ${"ends with dot"}
+		${"branch/"}             | ${"Branch name cannot end with a slash"}            | ${"ends with slash"}
+		${"feature//double"}     | ${"Branch name cannot contain consecutive slashes"} | ${"consecutive slashes"}
+		${"/starts-slash"}       | ${"Branch name cannot start with a slash"}          | ${"starts with slash"}
+		${"branch.lock"}         | ${"Branch name cannot end with '.lock'"}            | ${"ends with .lock"}
+	`(
+		'should return $expected for "$branchName" ($description)',
+		({ branchName, expected }) => {
+			const result = isValidBranchName(branchName);
+			expect(result).toBe(expected);
 		},
 	);
 });

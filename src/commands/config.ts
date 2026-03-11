@@ -1,20 +1,16 @@
+import { EOL } from "node:os";
 import { confirm, input } from "@inquirer/prompts";
 import { Args, Flags } from "@oclif/core";
-import type { CommandError } from "@oclif/core/interfaces";
 import { BaseCommand } from "../lib/base-command.js";
-import { renderError } from "../lib/cli.js";
 import { CONFIG_NAMES, type ConfigName } from "../lib/constants.js";
 import { gitGetConfigValue, gitSetConfigValue } from "../lib/git.js";
 import { conjoin } from "../lib/utils.js";
 import {
-	InvalidConfigValueError,
 	isValidBranch,
 	isValidCommand,
 	isValidEmail,
 	validateConfigValue,
 } from "../lib/validators.js";
-
-class UnknownConfigError extends Error {}
 
 export default class Config extends BaseCommand {
 	static override description = "Configure worktree CLI settings";
@@ -45,12 +41,12 @@ export default class Config extends BaseCommand {
 				continue;
 			}
 
-			console.log(value ? `${variable}=${value}` : variable);
+			this.log(value ? `${variable}=${value}` : variable);
 			count++;
 		}
 
 		if (missing && count === 0) {
-			console.log("No variables have missing values");
+			this.log("No variables have missing values");
 		}
 	}
 
@@ -74,7 +70,7 @@ export default class Config extends BaseCommand {
 
 		// First check if there is anything to prompt
 		if (configNames.length === 0) {
-			console.log("No missing config found.");
+			this.log("No missing config found.");
 			return;
 		}
 
@@ -136,7 +132,12 @@ export default class Config extends BaseCommand {
 
 		if (args.name) {
 			if (!this.isValidArgName(args.name)) {
-				throw new UnknownConfigError(`Unknown config name: ${args.name}`);
+				this.error(
+					[
+						`Unknown config name: ${args.name}`,
+						`Available variables: ${conjoin(CONFIG_NAMES)}`,
+					].join(EOL),
+				);
 			}
 
 			if (args.value) {
@@ -153,18 +154,5 @@ export default class Config extends BaseCommand {
 		}
 
 		return this.renderInput(flags.missing);
-	}
-
-	async catch(error: CommandError) {
-		if (error instanceof UnknownConfigError) {
-			renderError(error.message);
-			console.log(`Available variables: ${conjoin(CONFIG_NAMES)}`);
-			return;
-		}
-		if (error instanceof InvalidConfigValueError) {
-			renderError(error.message);
-			return;
-		}
-		return super.catch(error);
 	}
 }

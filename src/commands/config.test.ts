@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as git from "../lib/git.js";
 import * as validators from "../lib/validators.js";
 import Config from "./config.js";

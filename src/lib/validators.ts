@@ -19,6 +19,41 @@ export async function isValidBranch(value: string): Promise<true | string> {
 	return branches.includes(value) || `Branch not found: ${value}`;
 }
 
+export function isValidBranchName(value: string): true | string {
+	if (!value || value.trim() === "") {
+		return "Branch name cannot be empty";
+	}
+
+	// Git branch naming rules
+	const invalidPatterns = [
+		{ regex: /^\./, message: "Branch name cannot start with a dot" },
+		{ regex: /\.\.$/, message: "Branch name cannot end with double dots" },
+		{ regex: /\.\./, message: "Branch name cannot contain double dots" },
+		{ regex: /\s/, message: "Branch name cannot contain spaces" },
+		{
+			regex: /[~^:\\*?[\]@{]/,
+			message: "Branch name contains invalid characters",
+		},
+		{ regex: /\.$/, message: "Branch name cannot end with a dot" },
+		{ regex: /\/$/, message: "Branch name cannot end with a slash" },
+		{
+			regex: /\/\//,
+			message: "Branch name cannot contain consecutive slashes",
+		},
+		{ regex: /^\//, message: "Branch name cannot start with a slash" },
+		{ regex: /\.$/, message: "Branch name cannot end with a dot" },
+		{ regex: /\.lock$/, message: "Branch name cannot end with '.lock'" },
+	];
+
+	for (const { regex, message } of invalidPatterns) {
+		if (regex.test(value)) {
+			return message;
+		}
+	}
+
+	return true;
+}
+
 export async function isValidConfigValue(
 	configName: string,
 	value: string,

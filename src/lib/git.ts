@@ -1,4 +1,6 @@
 import { EOL } from "node:os";
+import path from "node:path";
+import ora from "ora";
 import { cmd } from "./cli.js";
 import type { ConfigName } from "./constants.js";
 
@@ -62,4 +64,43 @@ export async function gitGetRemoteBranches() {
 		}
 		return trimmed;
 	});
+}
+
+interface GitCreateWorktreeOptions {
+	isRemoteBranch?: boolean;
+}
+
+export async function gitCreateWorktree(
+	branchName: string,
+	sourceBranch: string,
+	{ isRemoteBranch = false }: GitCreateWorktreeOptions = {},
+): Promise<string> {
+	const spinner = ora(`Creating worktree ${branchName}`).start();
+	try {
+		const currentPath = process.env.PWD;
+		const gitRootPath = await gitGetRootPath();
+		const worktreesRootPath = `../${path.basename(gitRootPath)}.worktrees`;
+		const worktreePath = `${worktreesRootPath}/${branchName}`;
+		const absoluteWorktreePath = `${gitRootPath}.worktrees/${branchName}`;
+		// cd into the root path so we can create a relative worktree. This ensures that
+		// everything stays in sync in case the project is moved in the filesystem.
+		const cdRoot = `cd ${gitRootPath}`;
+		// Fetch the latest changes from the remote
+		const gitFetch = "git fetch";
+		// If adding from a remote branch, allow tracking
+		const addWorktree = isRemoteBranch
+			? `git worktree add ${worktreePath} ${branchName}`
+			: `git worktree add --no-track -b ${branchName} ${worktreePath} ${sourceBranch}`;
+		// Go back
+		const gotoBack = `cd ${currentPath}`;
+		// Run them all in sequence
+		await cmd(`${cdRoot} && ${gitFetch} && ${addWorktree} && ${gotoBack}`);
+		// Stop the spinner
+		spinner.succeed();
+		// Return the absolute path to the new worktree
+		return absoluteWorktreePath;
+	} catch (error) {
+		spinner.fail(error instanceof Error ? error.message : String(error));
+		throw error;
+	}
 }
