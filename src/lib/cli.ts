@@ -37,3 +37,11 @@ export async function commandExists(command: string): Promise<boolean> {
 		return false;
 	}
 }
+
+export function renderError(text: string) {
+	console.error(`❌ ${text}`);
+}
+
+export function renderSuccess(text: string) {
+	console.log(`✅ ${text}`);
+}

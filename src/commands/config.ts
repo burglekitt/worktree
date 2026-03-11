@@ -2,13 +2,16 @@ import { confirm, input } from "@inquirer/prompts";
 import { Args, Flags } from "@oclif/core";
 import type { CommandError } from "@oclif/core/interfaces";
 import { BaseCommand } from "../lib/base-command.js";
+import { renderError } from "../lib/cli.js";
 import { CONFIG_NAMES, type ConfigName } from "../lib/constants.js";
 import { gitGetConfigValue, gitSetConfigValue } from "../lib/git.js";
 import { conjoin } from "../lib/utils.js";
 import {
+	InvalidConfigValueError,
 	isValidBranch,
 	isValidCommand,
 	isValidEmail,
+	validateConfigValue,
 } from "../lib/validators.js";
 
 class UnknownConfigError extends Error {}
@@ -132,13 +135,12 @@ export default class Config extends BaseCommand {
 		const { args, flags } = await this.parse(Config);
 
 		if (args.name) {
-			console.log(args.name);
-
 			if (!this.isValidArgName(args.name)) {
 				throw new UnknownConfigError(`Unknown config name: ${args.name}`);
 			}
 
 			if (args.value) {
+				await validateConfigValue(args.name, args.value);
 				await gitSetConfigValue(args.name, args.value);
 				return;
 			}
@@ -155,8 +157,12 @@ export default class Config extends BaseCommand {
 
 	async catch(error: CommandError) {
 		if (error instanceof UnknownConfigError) {
-			console.log(error.message);
+			renderError(error.message);
 			console.log(`Available variables: ${conjoin(CONFIG_NAMES)}`);
+			return;
+		}
+		if (error instanceof InvalidConfigValueError) {
+			renderError(error.message);
 			return;
 		}
 		return super.catch(error);

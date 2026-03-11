@@ -18,3 +18,31 @@ export async function isValidBranch(value: string): Promise<true | string> {
 		: await gitGetLocalBranches();
 	return branches.includes(value) || `Branch not found: ${value}`;
 }
+
+export async function isValidConfigValue(
+	configName: string,
+	value: string,
+): Promise<true | string> {
+	switch (configName) {
+		case "jira.email":
+			return isValidEmail(value);
+		case "defaultSourceBranch":
+			return isValidBranch(value);
+		case "codeEditor":
+			return await isValidCommand(value);
+		default:
+			return true;
+	}
+}
+
+export class InvalidConfigValueError extends Error {}
+
+export async function validateConfigValue(
+	configName: string,
+	value: string,
+): Promise<void> {
+	const validationResult = await isValidConfigValue(configName, value);
+	if (validationResult !== true) {
+		throw new InvalidConfigValueError(validationResult);
+	}
+}
