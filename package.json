@@ -44,9 +44,9 @@
     "@burglekitt/worktree": "bin/run.js"
   },
   "oclif": {
-    "bin": "@burglekitt/worktree",
-    "binAliases": [
-      "worktree"
+    "bin": "worktree",
+    "aliases": [
+      "@burglekitt/worktree"
     ],
     "plugins": [
       "@oclif/plugin-*"
