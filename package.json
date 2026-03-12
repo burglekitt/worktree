@@ -18,6 +18,9 @@
     "release:major": "pnpm verify && npm version major && git push --follow-tags",
     "prepublishOnly": "pnpm build && pnpm test"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist",
     "bin",
