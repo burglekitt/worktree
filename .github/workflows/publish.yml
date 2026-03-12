@@ -20,7 +20,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
+          registry-url: "https://registry.npmjs.org"
+          always-auth: false
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
@@ -59,6 +60,13 @@ jobs:
           echo "Environment: ${GITHUB_ENV}"
           echo "Ref: $GITHUB_REF"
           echo "Actor: $GITHUB_ACTOR"
+
+      - name: Test npm authentication
+        run: |
+          echo "Testing npm whoami..."
+          npm whoami || echo "npm whoami failed - this might be expected with trusted publishing"
+          echo "Registry config:"
+          npm config get registry
 
       - name: Publish to npm
         run: npm publish --access=public --provenance
