@@ -5,6 +5,10 @@ on:
     tags:
       - "v*"
 
+permissions:
+  id-token: write # Required for OIDC
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -52,21 +56,6 @@ jobs:
 
       - name: Build project
         run: pnpm build
-
-      - name: Debug OIDC token
-        run: |
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:0:10}..."
-          echo "Environment: ${GITHUB_ENV}"
-          echo "Ref: $GITHUB_REF"
-          echo "Actor: $GITHUB_ACTOR"
-
-      - name: Test npm authentication
-        run: |
-          echo "Testing npm whoami..."
-          npm whoami || echo "npm whoami failed - this might be expected with trusted publishing"
-          echo "Registry config:"
-          npm config get registry
 
       - name: Publish to npm
         run: npm publish --access=public --provenance
