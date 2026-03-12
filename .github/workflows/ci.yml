@@ -12,6 +12,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate release version consistency
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          if [[ $BRANCH_NAME =~ release/v(.+) ]]; then
+            BRANCH_VERSION="${BASH_REMATCH[1]}"
+            PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+            echo "Branch version: $BRANCH_VERSION"
+            echo "Package.json version: $PACKAGE_VERSION"
+
+            if [[ "$BRANCH_VERSION" != "$PACKAGE_VERSION" ]]; then
+              echo "❌ Version mismatch!"
+              echo "Branch suggests version $BRANCH_VERSION but package.json has $PACKAGE_VERSION"
+              echo "Please update package.json version to match the branch name"
+              exit 1
+            fi
+
+            echo "✅ Version consistency validated: $BRANCH_VERSION"
+          fi
+
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4

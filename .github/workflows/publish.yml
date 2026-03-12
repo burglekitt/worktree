@@ -2,23 +2,66 @@ name: Publish Package
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to publish from"
+        required: true
+        type: string
 
 permissions:
   id-token: write # Required for OIDC
-  contents: read
+  contents: write # Required for creating tags
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 10 # Get recent commits to check for release merges
+
+      - name: Check if release merge and extract version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            BRANCH="${{ github.event.inputs.branch }}"
+            if [[ $BRANCH =~ release/v(.+) ]]; then
+              VERSION="${BASH_REMATCH[1]}"
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "is_release=true" >> $GITHUB_OUTPUT
+              echo "Manual release: Publishing version $VERSION from branch $BRANCH"
+            else
+              echo "is_release=false" >> $GITHUB_OUTPUT
+              echo "Branch $BRANCH does not match release/v* pattern"
+            fi
+          else
+            # Check recent commit messages for release branch merges
+            MERGE_MSG=$(git log --oneline -10 --grep="Merge.*release/v" | head -1)
+            if [[ -n "$MERGE_MSG" && "$MERGE_MSG" =~ release/v([0-9]+\.[0-9]+\.[0-9]+[^[:space:]]*) ]]; then
+              VERSION="${BASH_REMATCH[1]}"
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "is_release=true" >> $GITHUB_OUTPUT
+              echo "Release merge detected: Publishing version $VERSION"
+              echo "Merge commit: $MERGE_MSG"
+            else
+              echo "is_release=false" >> $GITHUB_OUTPUT
+              echo "No release branch merge detected in recent commits"
+            fi
+          fi
+
+      - name: Skip if not a release
+        if: steps.version.outputs.is_release != 'true'
+        run: |
+          echo "This push is not from a release branch merge. Skipping publish."
+          exit 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -59,3 +102,10 @@ jobs:
 
       - name: Publish to npm
         run: npm publish
+
+      - name: Create git tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
