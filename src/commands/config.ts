@@ -1,6 +1,7 @@
 import { EOL } from "node:os";
 import { confirm, input } from "@inquirer/prompts";
 import { Args, Flags } from "@oclif/core";
+import chalk from "chalk";
 import { BaseCommand } from "../lib/base-command.js";
 import { CONFIG_NAMES, type ConfigName } from "../lib/constants.js";
 import { gitGetConfigValue, gitSetConfigValue } from "../lib/git.js";
@@ -11,6 +12,9 @@ import {
 	isValidEmail,
 	validateConfigValue,
 } from "../lib/validators.js";
+
+// TODO: Implement properly when Jira integration has been added
+const JIRA_ENABLED = false;
 
 export default class Config extends BaseCommand {
 	static override description = "Configure worktree CLI settings";
@@ -24,7 +28,6 @@ export default class Config extends BaseCommand {
 			char: "l",
 			description: "List all available variables",
 		}),
-		help: Flags.help({ char: "h", description: "Show config help" }),
 		missing: Flags.boolean({
 			char: "m",
 			description: "Only prompt missing variables",
@@ -66,7 +69,8 @@ export default class Config extends BaseCommand {
 
 	private async renderInput(missing: boolean) {
 		const configNames = await this.getPromptConfigNames(missing);
-		const hasJiraPrompt = !!configNames.find((name) => name.startsWith("jira"));
+		const hasJiraPrompt =
+			JIRA_ENABLED && !!configNames.find((name) => name.startsWith("jira"));
 
 		// First check if there is anything to prompt
 		if (configNames.length === 0) {
@@ -121,6 +125,8 @@ export default class Config extends BaseCommand {
 			});
 			await gitSetConfigValue("codeEditor", codeEditor);
 		}
+
+		this.log(`${chalk.green("✔")} Configuration complete!${EOL}`);
 	}
 
 	private isValidArgName(name: string): name is ConfigName {
@@ -129,6 +135,9 @@ export default class Config extends BaseCommand {
 
 	public async run(): Promise<void> {
 		const { args, flags } = await this.parse(Config);
+
+		// Mark that config has been called at least once
+		await gitSetConfigValue("has-called-config", "true");
 
 		if (args.name) {
 			if (!this.isValidArgName(args.name)) {

@@ -19,7 +19,6 @@ export default class Branch extends BaseCommand {
 		"<%= config.bin %> <%= command.id %> my-new-branch",
 	];
 	static override flags = {
-		help: Flags.help({ char: "h", description: "Show branch help" }),
 		source: Flags.string({
 			char: "s",
 			description: "Source branch to create the worktree from",
@@ -82,6 +81,8 @@ export default class Branch extends BaseCommand {
 
 	public async run(): Promise<void> {
 		const { args, flags } = await this.parse(Branch);
+		// If there is no source flag provided, make sure defaultSourceBranch is configured
+		await this.verifyConfig(flags.source ? [] : ["defaultSourceBranch"]);
 		const branchName = await this.getBranchName(args.branchName);
 		const sourceBranch = await this.getSourceBranch(flags.source);
 		const projectPath = await gitCreateWorktree(branchName, sourceBranch);
