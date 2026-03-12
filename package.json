@@ -12,9 +12,10 @@
     "format:fix": "biome format --write",
     "lint": "biome lint",
     "lint:fix": "biome lint --write",
-    "release:patch": "npm version patch && git push && git push --tags",
-    "release:minor": "npm version minor && git push && git push --tags",
-    "release:major": "npm version major && git push && git push --tags",
+    "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm test",
+    "release:patch": "pnpm verify && npm version patch && git push --follow-tags",
+    "release:minor": "pnpm verify && npm version minor && git push --follow-tags",
+    "release:major": "pnpm verify && npm version major && git push --follow-tags",
     "prepublishOnly": "pnpm build && pnpm test"
   },
   "files": [

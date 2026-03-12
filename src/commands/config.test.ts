@@ -1,156 +1,164 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: Allow any in tests */
 import * as git from "../lib/git.js";
 import * as validators from "../lib/validators.js";
 import Config from "./config.js";
 
 describe("config command", () => {
-	let config: Config;
-	let mockConsoleLog: ReturnType<typeof vi.spyOn>;
+  let config: Config;
+  let mockConsoleLog: ReturnType<typeof vi.spyOn>;
 
-	beforeEach(() => {
-		vi.clearAllMocks();
-		// biome-ignore lint/suspicious/noExplicitAny: Required for oclif testing
-		config = new Config([], {} as any);
-		mockConsoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
-	});
+  beforeEach(() => {
+    vi.clearAllMocks();
 
-	describe("--list flag", () => {
-		it("should list all config values when they exist", async () => {
-			// Mock the parse method to simulate --list flag
-			// biome-ignore lint/suspicious/noExplicitAny: Required for oclif method mocking
-			(config as any).parse = vi.fn().mockResolvedValue({
-				args: {},
-				flags: { list: true, missing: false },
-			});
+    const mockConfig = {
+      runCommand: vi.fn().mockResolvedValue(undefined),
+    } as any;
+    config = new Config([], mockConfig);
+    mockConsoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
 
-			vi.spyOn(git, "gitGetConfigValue")
-				.mockResolvedValueOnce("https://test.atlassian.net") // jira.domain
-				.mockResolvedValueOnce("test@example.com") // jira.email
-				.mockResolvedValueOnce("api-token-123") // jira.apiToken
-				.mockResolvedValueOnce("code") // codeEditor
-				.mockResolvedValueOnce("origin/main"); // defaultSourceBranch
+    // Default mock to prevent config verification from running
+    vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+      if (key === "has-called-config") return Promise.resolve("true");
+      return Promise.resolve("");
+    });
+  });
 
-			await config.run();
+  describe("--list flag", () => {
+    it("should list all config values when they exist", async () => {
+      // Mock the parse method to simulate --list flag
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { list: true, missing: false },
+      });
 
-			expect(mockConsoleLog).toHaveBeenCalledWith(
-				"jira.domain=https://test.atlassian.net",
-			);
-			expect(mockConsoleLog).toHaveBeenCalledWith(
-				"jira.email=test@example.com",
-			);
-			expect(mockConsoleLog).toHaveBeenCalledWith(
-				"jira.apiToken=api-token-123",
-			);
-			expect(mockConsoleLog).toHaveBeenCalledWith("codeEditor=code");
-			expect(mockConsoleLog).toHaveBeenCalledWith(
-				"defaultSourceBranch=origin/main",
-			);
-		});
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "jira.domain")
+          return Promise.resolve("https://test.atlassian.net");
+        if (key === "jira.email") return Promise.resolve("test@example.com");
+        if (key === "jira.apiToken") return Promise.resolve("api-token-123");
+        if (key === "codeEditor") return Promise.resolve("code");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/main");
+        return Promise.resolve("");
+      });
 
-		it("should list config names when values are missing", async () => {
-			// biome-ignore lint/suspicious/noExplicitAny: Required for oclif method mocking
-			(config as any).parse = vi.fn().mockResolvedValue({
-				args: {},
-				flags: { list: true, missing: false },
-			});
+      await config.run();
 
-			vi.spyOn(git, "gitGetConfigValue").mockResolvedValue(""); // All empty
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        "jira.domain=https://test.atlassian.net",
+      );
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        "jira.email=test@example.com",
+      );
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        "jira.apiToken=api-token-123",
+      );
+      expect(mockConsoleLog).toHaveBeenCalledWith("codeEditor=code");
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        "defaultSourceBranch=origin/main",
+      );
+    });
 
-			await config.run();
+    it("should list config names when values are missing", async () => {
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { list: true, missing: false },
+      });
 
-			expect(mockConsoleLog).toHaveBeenCalledWith("jira.domain");
-			expect(mockConsoleLog).toHaveBeenCalledWith("jira.email");
-			expect(mockConsoleLog).toHaveBeenCalledWith("jira.apiToken");
-			expect(mockConsoleLog).toHaveBeenCalledWith("codeEditor");
-			expect(mockConsoleLog).toHaveBeenCalledWith("defaultSourceBranch");
-		});
+      vi.spyOn(git, "gitGetConfigValue").mockResolvedValue(""); // All empty
 
-		it("should handle --missing flag with no missing values", async () => {
-			// biome-ignore lint/suspicious/noExplicitAny: Required for oclif method mocking
-			(config as any).parse = vi.fn().mockResolvedValue({
-				args: {},
-				flags: { list: true, missing: true },
-			});
+      await config.run();
 
-			vi.spyOn(git, "gitGetConfigValue").mockResolvedValue("some-value"); // All have values
+      expect(mockConsoleLog).toHaveBeenCalledWith("jira.domain");
+      expect(mockConsoleLog).toHaveBeenCalledWith("jira.email");
+      expect(mockConsoleLog).toHaveBeenCalledWith("jira.apiToken");
+      expect(mockConsoleLog).toHaveBeenCalledWith("codeEditor");
+      expect(mockConsoleLog).toHaveBeenCalledWith("defaultSourceBranch");
+    });
 
-			await config.run();
+    it("should handle --missing flag with no missing values", async () => {
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { list: true, missing: true },
+      });
 
-			expect(mockConsoleLog).toHaveBeenCalledWith(
-				"No variables have missing values",
-			);
-		});
-	});
+      vi.spyOn(git, "gitGetConfigValue").mockResolvedValue("some-value"); // All have values
 
-	describe("setting config values", () => {
-		it("should set a valid config value", async () => {
-			const mockSetConfigValue = vi
-				.spyOn(git, "gitSetConfigValue")
-				.mockResolvedValue();
-			const mockValidateConfigValue = vi
-				.spyOn(validators, "validateConfigValue")
-				.mockResolvedValue();
+      await config.run();
 
-			// Mock the parse method to return the args we want
-			// biome-ignore lint/suspicious/noExplicitAny: Required for oclif method mocking
-			(config as any).parse = vi.fn().mockResolvedValue({
-				args: { name: "jira.email", value: "test@example.com" },
-				flags: {},
-			});
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        "No variables have missing values",
+      );
+    });
+  });
 
-			await config.run();
+  describe("setting config values", () => {
+    it("should set a valid config value", async () => {
+      const mockSetConfigValue = vi
+        .spyOn(git, "gitSetConfigValue")
+        .mockResolvedValue();
+      const mockValidateConfigValue = vi
+        .spyOn(validators, "validateConfigValue")
+        .mockResolvedValue();
 
-			expect(mockValidateConfigValue).toHaveBeenCalledWith(
-				"jira.email",
-				"test@example.com",
-			);
-			expect(mockSetConfigValue).toHaveBeenCalledWith(
-				"jira.email",
-				"test@example.com",
-			);
-		});
+      // Mock the parse method to return the args we want
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: { name: "jira.email", value: "test@example.com" },
+        flags: {},
+      });
 
-		it("should get config value when only name is provided", async () => {
-			const mockGetConfigValue = vi
-				.spyOn(git, "gitGetConfigValue")
-				.mockResolvedValue("test@example.com");
+      await config.run();
 
-			// biome-ignore lint/suspicious/noExplicitAny: Required for oclif method mocking
-			(config as any).parse = vi.fn().mockResolvedValue({
-				args: { name: "jira.email" },
-				flags: {},
-			});
+      expect(mockValidateConfigValue).toHaveBeenCalledWith(
+        "jira.email",
+        "test@example.com",
+      );
+      expect(mockSetConfigValue).toHaveBeenCalledWith(
+        "jira.email",
+        "test@example.com",
+      );
+    });
 
-			await config.run();
+    it("should get config value when only name is provided", async () => {
+      const mockGetConfigValue = vi
+        .spyOn(git, "gitGetConfigValue")
+        .mockResolvedValue("test@example.com");
 
-			expect(mockGetConfigValue).toHaveBeenCalledWith("jira.email");
-		});
-	});
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: { name: "jira.email" },
+        flags: {},
+      });
 
-	describe("error handling", () => {
-		it("should handle unknown config name", async () => {
-			// biome-ignore lint/suspicious/noExplicitAny: Required for oclif method mocking
-			(config as any).parse = vi.fn().mockResolvedValue({
-				args: { name: "unknown.setting", value: "test" },
-				flags: {},
-			});
+      await config.run();
 
-			await expect(config.run()).rejects.toThrow(
-				"Unknown config name: unknown.setting",
-			);
-		});
+      expect(mockGetConfigValue).toHaveBeenCalledWith("jira.email");
+    });
+  });
 
-		it("should handle invalid config value", async () => {
-			vi.spyOn(validators, "validateConfigValue").mockRejectedValue(
-				new validators.InvalidConfigValueError("Invalid email address"),
-			);
+  describe("error handling", () => {
+    it("should handle unknown config name", async () => {
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: { name: "unknown.setting", value: "test" },
+        flags: {},
+      });
 
-			// biome-ignore lint/suspicious/noExplicitAny: Required for oclif method mocking
-			(config as any).parse = vi.fn().mockResolvedValue({
-				args: { name: "jira.email", value: "invalid-email" },
-				flags: {},
-			});
+      await expect(config.run()).rejects.toThrow(
+        "Unknown config name: unknown.setting",
+      );
+    });
 
-			await expect(config.run()).rejects.toThrow("Invalid email address");
-		});
-	});
+    it("should handle invalid config value", async () => {
+      vi.spyOn(validators, "validateConfigValue").mockRejectedValue(
+        new validators.InvalidConfigValueError("Invalid email address"),
+      );
+
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: { name: "jira.email", value: "invalid-email" },
+        flags: {},
+      });
+
+      await expect(config.run()).rejects.toThrow("Invalid email address");
+    });
+  });
 });
