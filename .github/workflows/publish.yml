@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
       branch:
@@ -17,6 +19,7 @@ permissions:
 
 jobs:
   publish:
+    if: github.event_name != 'pull_request' || startsWith(github.head_ref, 'release/v')
     runs-on: ubuntu-latest
     environment: release
     permissions:
