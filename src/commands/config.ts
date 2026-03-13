@@ -3,8 +3,9 @@ import { confirm, input } from "@inquirer/prompts";
 import { Args, Flags } from "@oclif/core";
 import chalk from "chalk";
 import { BaseCommand } from "../lib/base-command.js";
-import { CONFIG_NAMES, type ConfigName } from "../lib/constants.js";
+import { CONFIG_NAMES } from "../lib/constants.js";
 import { gitGetConfigValue, gitSetConfigValue } from "../lib/git.js";
+import type { ConfigName } from "../lib/types.js";
 import { conjoin } from "../lib/utils.js";
 import {
   isValidBranch,

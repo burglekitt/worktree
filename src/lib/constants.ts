@@ -6,5 +6,3 @@ export const CONFIG_NAMES = [
   "codeEditor",
   "defaultSourceBranch",
 ] as const;
-
-export type ConfigName = (typeof CONFIG_NAMES)[number];

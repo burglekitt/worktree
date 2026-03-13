@@ -8,7 +8,7 @@ A CLI tool for managing Git worktrees with enhanced functionality.
 
 - [x] Add `config` command to configure everything needed
 - [x] Add `branch` command to create new worktrees
-- [ ] Add `delete` command to delete worktrees
+- [x] Add `remove` command to delete worktrees
 - [ ] Add `checkout` command to create worktree from a remote branch
 - [ ] Add `cleanup` command to cleanup stale worktrees
 - [ ] Integrate with JIRA for automated branch naming

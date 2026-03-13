@@ -4,8 +4,8 @@ import { Command } from "@oclif/core";
 import type { CommandError } from "@oclif/core/interfaces";
 import chalk from "chalk";
 import ora from "ora";
-import type { ConfigName } from "./constants.js";
 import { gitGetConfigValue } from "./git.js";
+import type { ConfigName } from "./types.js";
 
 export abstract class BaseCommand extends Command {
   private confirmFirstTimeConfig() {
@@ -64,11 +64,11 @@ export abstract class BaseCommand extends Command {
     if (error instanceof Error) {
       if (error.name === "ExitPromptError") {
         // Silently exit
-        this.exit();
+        return;
       }
       // Color the error message red for better visibility
       this.log(chalk.red(`Error: ${error.message}`));
-      this.exit();
+      return;
     }
     return super.catch(error);
   }
