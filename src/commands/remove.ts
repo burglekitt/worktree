@@ -8,7 +8,7 @@ import type { WorktreeListEntry } from "../lib/types.js";
 import { worktreeListEntryToListName } from "../lib/utils.js";
 
 export default class Delete extends BaseCommand {
-  static aliases = ["rm"];
+  static aliases = ["rm", "delete"];
   static override args = {
     branchName: Args.string({ description: "Name of the branch to remove" }),
   };
