@@ -4,7 +4,11 @@ import path from "node:path";
 import { confirm } from "@inquirer/prompts";
 import ora from "ora";
 import { cmd } from "./cli.js";
-import type { ConfigName, WorktreeListEntry } from "./types.js";
+import type {
+  ConfigName,
+  WorktreeListBaseEntry,
+  WorktreeListEntry,
+} from "./types.js";
 import { strToNum } from "./utils.js";
 
 export async function gitGetConfigValue(name: ConfigName) {
@@ -116,6 +120,35 @@ export async function gitGetLocalBranchesTracking() {
   });
 }
 
+interface GitGetWorktreesOptions {
+  includeCurrent?: boolean;
+}
+
+export async function gitGetWorktrees({
+  includeCurrent = false,
+}: GitGetWorktreesOptions = {}): Promise<WorktreeListBaseEntry[]> {
+  const currentBranch = await getCurrentBranchName();
+  const worktreesRootPath = await gitGetAbsoluteWorktreesPath();
+  const result = await cmd("git worktree list");
+
+  return (
+    result
+      .split(EOL)
+      .map((line) => {
+        const [path, _, branchStr] = line.replace(/\s\s+/g, " ").split(" ");
+        const branchName = branchStr.slice(1, -1);
+        const isCurrent = branchName === currentBranch;
+        const pathExists = fs.existsSync(path);
+        return { path, branchName, pathExists, isCurrent };
+      })
+      // Filter out any branches that are not worktree branches, and also skip the current branch
+      .filter(
+        ({ path, isCurrent }) =>
+          path.startsWith(worktreesRootPath) && (includeCurrent || !isCurrent),
+      )
+  );
+}
+
 function isSafeToRemove(wt: WorktreeListEntry) {
   if (!wt.pathExists) {
     // Worktree is defined but doesn't exist in the filesystem.
@@ -131,38 +164,17 @@ function isSafeToRemove(wt: WorktreeListEntry) {
   }
 }
 
-interface GitGetWorktreeListOptions {
-  includeCurrent?: boolean;
-}
-
 export async function gitGetWorktreeList({
   includeCurrent = false,
-}: GitGetWorktreeListOptions = {}) {
-  const currentBranch = await getCurrentBranchName();
+}: GitGetWorktreesOptions = {}) {
   const remoteBranches = await gitGetRemoteBranches();
-  const worktreesRootPath = await gitGetAbsoluteWorktreesPath();
   const tracking = await gitGetLocalBranchesTracking();
-  const result = await cmd("git worktree list");
-
-  const list = result
-    .split(EOL)
-    .map((line) => {
-      const [path, _, branchStr] = line.replace(/\s\s+/g, " ").split(" ");
-      const branchName = branchStr.slice(1, -1);
-      const remote = tracking.find((t) => t.local === branchName)?.remote ?? "";
-      return { path, branchName, remote };
-    })
-    // Filter out any branches that are not worktree branches, and also skip the current branch
-    .filter(
-      ({ path, branchName }) =>
-        path.startsWith(worktreesRootPath) &&
-        (includeCurrent || branchName !== currentBranch),
-    );
+  const result = await gitGetWorktrees({ includeCurrent });
 
   const worktreeList: WorktreeListEntry[] = [];
 
-  for (const { path, branchName, remote } of list) {
-    const pathExists = fs.existsSync(path);
+  for (const { path, branchName, pathExists, isCurrent } of result) {
+    const remote = tracking.find((t) => t.local === branchName)?.remote ?? "";
     const remoteExists = !!remote && remoteBranches.includes(remote);
     const ahead =
       pathExists && remoteExists
@@ -185,6 +197,7 @@ export async function gitGetWorktreeList({
       behind,
       pathExists,
       uncommittedChanges,
+      isCurrent,
     };
 
     worktreeList.push({

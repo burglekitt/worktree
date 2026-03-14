@@ -41,8 +41,9 @@ export function worktreeListEntryToListName(
     );
   }
 
+  const currentStr = wt.isCurrent ? chalk.green(" (Current)") : "";
   const detailsStr =
-    details.length > 0 ? chalk[color](`(${details.join(", ")})`) : "";
+    details.length > 0 ? chalk[color](` (${details.join(", ")})`) : "";
 
-  return `${wt.branchName} ${detailsStr}`;
+  return `${wt.branchName}${currentStr}${detailsStr}`;
 }

@@ -10,7 +10,7 @@ export default class List extends BaseCommand {
   public async run(): Promise<void> {
     await this.parse(List);
     const spinner = ora("Gathering worktree list").start();
-    const worktrees = await gitGetWorktreeList();
+    const worktrees = await gitGetWorktreeList({ includeCurrent: true });
     spinner.stop();
 
     worktrees.forEach((wt) => {
