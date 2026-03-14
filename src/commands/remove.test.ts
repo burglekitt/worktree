@@ -138,7 +138,7 @@ describe("remove command", () => {
       vi.spyOn(git, "gitGetWorktreeList").mockResolvedValue([safeWorktree]);
       mockCheckbox.mockResolvedValue([]);
       const mockRemove = vi
-        .spyOn(git, "gitRemoveWorktree")
+        .spyOn(git, "gitRemoveWorktreesWithProgress")
         .mockResolvedValue(undefined);
 
       (remove as any).parse = vi.fn().mockResolvedValue({
@@ -156,7 +156,7 @@ describe("remove command", () => {
       vi.spyOn(git, "gitGetWorktreeList").mockResolvedValue([safeWorktree]);
       mockCheckbox.mockResolvedValue([safeWorktree]);
       const mockRemove = vi
-        .spyOn(git, "gitRemoveWorktree")
+        .spyOn(git, "gitRemoveWorktreesWithProgress")
         .mockResolvedValue(undefined);
 
       (remove as any).parse = vi.fn().mockResolvedValue({
@@ -167,7 +167,7 @@ describe("remove command", () => {
       await remove.run();
 
       expect(mockConfirm).not.toHaveBeenCalled();
-      expect(mockRemove).toHaveBeenCalledWith("feature/safe", { force: true });
+      expect(mockRemove).toHaveBeenCalledWith([safeWorktree]);
     });
 
     it("should prompt for confirmation when an unsafe worktree is selected", async () => {
@@ -175,7 +175,7 @@ describe("remove command", () => {
       mockCheckbox.mockResolvedValue([unsafeWorktree]);
       mockConfirm.mockResolvedValue(true);
       const mockRemove = vi
-        .spyOn(git, "gitRemoveWorktree")
+        .spyOn(git, "gitRemoveWorktreesWithProgress")
         .mockResolvedValue(undefined);
 
       (remove as any).parse = vi.fn().mockResolvedValue({
@@ -190,9 +190,7 @@ describe("remove command", () => {
           "Some selected branches are not safe to delete. Are you sure you want to continue?",
         default: false,
       });
-      expect(mockRemove).toHaveBeenCalledWith("feature/unsafe", {
-        force: true,
-      });
+      expect(mockRemove).toHaveBeenCalledWith([unsafeWorktree]);
     });
 
     it("should not remove when user declines the unsafe confirmation", async () => {
@@ -200,7 +198,7 @@ describe("remove command", () => {
       mockCheckbox.mockResolvedValue([unsafeWorktree]);
       mockConfirm.mockResolvedValue(false);
       const mockRemove = vi
-        .spyOn(git, "gitRemoveWorktree")
+        .spyOn(git, "gitRemoveWorktreesWithProgress")
         .mockResolvedValue(undefined);
 
       (remove as any).parse = vi.fn().mockResolvedValue({
@@ -218,7 +216,7 @@ describe("remove command", () => {
       vi.spyOn(git, "gitGetWorktreeList").mockResolvedValue([unsafeWorktree]);
       mockCheckbox.mockResolvedValue([unsafeWorktree]);
       const mockRemove = vi
-        .spyOn(git, "gitRemoveWorktree")
+        .spyOn(git, "gitRemoveWorktreesWithProgress")
         .mockResolvedValue(undefined);
 
       (remove as any).parse = vi.fn().mockResolvedValue({
@@ -229,9 +227,7 @@ describe("remove command", () => {
       await remove.run();
 
       expect(mockConfirm).not.toHaveBeenCalled();
-      expect(mockRemove).toHaveBeenCalledWith("feature/unsafe", {
-        force: true,
-      });
+      expect(mockRemove).toHaveBeenCalledWith([unsafeWorktree]);
     });
 
     it("should remove multiple selected worktrees in sequence", async () => {
@@ -246,7 +242,7 @@ describe("remove command", () => {
       ]);
       mockCheckbox.mockResolvedValue([safeWorktree, secondSafeWorktree]);
       const mockRemove = vi
-        .spyOn(git, "gitRemoveWorktree")
+        .spyOn(git, "gitRemoveWorktreesWithProgress")
         .mockResolvedValue(undefined);
 
       (remove as any).parse = vi.fn().mockResolvedValue({
@@ -256,9 +252,11 @@ describe("remove command", () => {
 
       await remove.run();
 
-      expect(mockRemove).toHaveBeenCalledTimes(2);
-      expect(mockRemove).toHaveBeenCalledWith("feature/safe", { force: true });
-      expect(mockRemove).toHaveBeenCalledWith("feature/safe2", { force: true });
+      expect(mockRemove).toHaveBeenCalledTimes(1);
+      expect(mockRemove).toHaveBeenCalledWith([
+        safeWorktree,
+        secondSafeWorktree,
+      ]);
     });
   });
 

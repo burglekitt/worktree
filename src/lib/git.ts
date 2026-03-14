@@ -2,6 +2,7 @@ import fs from "node:fs";
 import { EOL } from "node:os";
 import path from "node:path";
 import { confirm } from "@inquirer/prompts";
+import Process from "cli-progress";
 import ora from "ora";
 import { cmd } from "./cli.js";
 import type {
@@ -248,21 +249,28 @@ export async function gitCreateWorktree(
   }
 }
 
-interface GitNukeWorktreeOptions {
+interface GitNukeWorktreeCmdOptions {
   force?: boolean;
 }
 
-async function gitNukeWorktree(
+export function gitNukeWorktreeCmd(
   branchName: string,
-  { force = false }: GitNukeWorktreeOptions = {},
+  { force = false }: GitNukeWorktreeCmdOptions = {},
+) {
+  return cmd(
+    `git worktree remove ${branchName}${
+      force ? " --force" : ""
+    } && git worktree prune && git branch -D ${branchName}`,
+  );
+}
+
+export async function gitNukeWorktree(
+  branchName: string,
+  { force = false }: GitNukeWorktreeCmdOptions = {},
 ) {
   const spinner = ora(`Removing worktree ${branchName}`).start();
   try {
-    await cmd(
-      `git worktree remove ${branchName}${
-        force ? " --force" : ""
-      } && git worktree prune && git branch -D ${branchName}`,
-    );
+    await gitNukeWorktreeCmd(branchName, { force });
     spinner.succeed(`Worktree ${branchName} was removed.`);
   } catch {
     spinner.fail(
@@ -273,7 +281,7 @@ async function gitNukeWorktree(
 
 export async function gitRemoveWorktree(
   branchName: string,
-  { force = false }: GitNukeWorktreeOptions = {},
+  { force = false }: GitNukeWorktreeCmdOptions = {},
 ) {
   const currentBranch = await getCurrentBranchName();
   if (branchName === currentBranch) {
@@ -316,4 +324,40 @@ export async function gitRemoveWorktree(
       force: force || !!worktree.ahead || !!worktree.uncommittedChanges,
     });
   }
+}
+
+export async function gitRemoveWorktreesWithProgress(
+  worktrees: WorktreeListEntry[],
+) {
+  const process = new Process.SingleBar(
+    {
+      format: "{bar} {percentage}% ({metaValue}/{metaTotal}) {description}",
+      barCompleteChar: "\u2588",
+      barIncompleteChar: "\u2591",
+      hideCursor: true,
+    },
+    Process.Presets.shades_classic,
+  );
+
+  process.start(worktrees.length * 10, 0, {
+    metaTotal: worktrees.length,
+  });
+
+  let i = 0;
+
+  for (const wt of worktrees) {
+    const description = `Deleting ${wt.branchName}`;
+    process.update({ metaValue: i, description });
+
+    i++;
+
+    await gitNukeWorktreeCmd(wt.branchName, { force: true });
+
+    process.update(i * 10, {
+      metaValue: i,
+      description: i === worktrees.length ? "Done" : description,
+    });
+  }
+
+  process.stop();
 }

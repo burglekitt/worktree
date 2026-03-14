@@ -1,8 +1,8 @@
 {
-	"cSpell.words": ["burglekitt", "oclif"],
-	"editor.codeActionsOnSave": {
-		"source.organizeImports.biome": "explicit",
-		"source.fixAll.biome": "explicit"
-	},
-	"js/ts.tsdk.path": "node_modules/typescript/lib"
+  "cSpell.words": ["burglekitt", "oclif"],
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit",
+    "source.fixAll.biome": "explicit"
+  },
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
