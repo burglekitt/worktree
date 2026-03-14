@@ -1,6 +1,6 @@
 {
   "name": "@burglekitt/worktree",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A CLI tool for managing git worktrees with enhanced workflow features",
   "main": "./bin/run.js",
   "type": "module",
@@ -13,9 +13,6 @@
     "lint": "biome lint",
     "lint:fix": "biome lint --write",
     "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm test",
-    "release:patch": "pnpm verify && npm version patch && git push --follow-tags",
-    "release:minor": "pnpm verify && npm version minor && git push --follow-tags",
-    "release:major": "pnpm verify && npm version major && git push --follow-tags",
     "prepublishOnly": "pnpm build && pnpm test"
   },
   "publishConfig": {
