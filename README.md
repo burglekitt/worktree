@@ -10,7 +10,7 @@ A CLI tool for managing Git worktrees with enhanced functionality.
 - [x] Add `branch` command to create new worktrees
 - [x] Add `remove` command to delete worktrees
 - [x] Add `checkout` command to create worktree from a remote branch
-- [ ] Add `list` command to list all worktrees
+- [x] Add `list` command to list all worktrees
 - [ ] Add `cleanup` command to cleanup stale worktrees
 - [ ] ADd `open` command to open a worktree in a code editor
 - [ ] Integrate with JIRA for automated branch naming
