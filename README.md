@@ -18,7 +18,7 @@ This README focuses on the fast path. The documentation website will cover deepe
 
 Git worktrees are great when you want multiple branches checked out at once, but the raw commands are still a bit awkward for everyday use. In practice, teams usually want a repeatable flow like this:
 
-1. branch off `main`
+1. branch off `origin/main`
 2. create a sibling worktree directory
 3. copy `.env` files
 4. open it in the editor
@@ -27,6 +27,29 @@ Git worktrees are great when you want multiple branches checked out at once, but
 `worktree` turns that into a few commands with sensible prompts.
 
 By default, worktrees are created in a sibling folder named `<repo>.worktrees`, so your main repository stays clean while related worktrees stay easy to find.
+
+## Context Switching Without The Tax
+
+One of the biggest wins with worktrees is how fast context switching becomes.
+
+Instead of juggling one checkout and constantly doing this dance:
+
+1. stash current changes
+2. switch branches
+3. do quick fix
+4. switch back
+5. unstash and resolve surprises
+
+you keep each task in its own directory and jump between them directly.
+
+That means:
+
+- fewer stash/unstash cycles
+- less risk of stash conflicts or forgotten stashes
+- less accidental cross-branch contamination
+- faster interrupts, reviews, and hotfixes
+
+In short: stop paying a context-switching penalty and stop stashing just to move between tasks.
 
 ## Install
 
