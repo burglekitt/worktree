@@ -16,6 +16,9 @@ describe("config command", () => {
     config = new Config([], mockConfig);
     mockConsoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
 
+    // Prevent config command tests from touching the low-level cmd wrapper.
+    vi.spyOn(git, "gitSetConfigValue").mockResolvedValue();
+
     // Default mock to prevent config verification from running
     vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
       if (key === "has-called-config") return Promise.resolve("true");

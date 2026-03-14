@@ -48,13 +48,12 @@ export async function gitGetRootPath() {
 }
 
 function parseGetBranchesResult(result: string) {
-  return result.split(EOL).map((branch) => {
-    const trimmed = branch.trim();
-    if (trimmed.includes(" ")) {
-      return trimmed.split(" ")[1];
-    }
-    return trimmed;
-  });
+  return result
+    .split(EOL)
+    .map((branch) => branch.trim())
+    .filter(Boolean)
+    .map((branch) => branch.replace(/^[*+]\s+/, ""))
+    .filter((branch) => !branch.includes(" -> "));
 }
 
 export async function gitGetLocalBranches() {
@@ -63,6 +62,7 @@ export async function gitGetLocalBranches() {
 }
 
 export async function gitGetRemoteBranches() {
+  await gitFetch();
   const res = await cmd("git --no-pager branch -r");
   return parseGetBranchesResult(res);
 }
@@ -197,13 +197,13 @@ export async function gitGetWorktreeList({
 }
 
 interface GitCreateWorktreeOptions {
-  isRemoteBranch?: boolean;
+  isCheckout?: boolean;
 }
 
 export async function gitCreateWorktree(
   branchName: string,
   sourceBranch: string,
-  { isRemoteBranch = false }: GitCreateWorktreeOptions = {},
+  { isCheckout = false }: GitCreateWorktreeOptions = {},
 ): Promise<string> {
   const spinner = ora(`Creating worktree ${branchName}`).start();
   try {
@@ -217,9 +217,9 @@ export async function gitCreateWorktree(
     const cdRoot = `cd ${gitRootPath}`;
     // Fetch the latest changes from the remote
     const gitFetch = "git fetch";
-    // If adding from a remote branch, allow tracking
-    const addWorktree = isRemoteBranch
-      ? `git worktree add ${worktreePath} ${branchName}`
+    // If checking out a remote branch, create a local tracking branch
+    const addWorktree = isCheckout
+      ? `git worktree add --track -b ${branchName} ${worktreePath} ${sourceBranch}`
       : `git worktree add --no-track -b ${branchName} ${worktreePath} ${sourceBranch}`;
     // Go back
     const gotoBack = `cd ${currentPath}`;
@@ -248,7 +248,7 @@ async function gitNukeWorktree(
     await cmd(
       `git worktree remove ${branchName}${
         force ? " --force" : ""
-      } && git branch -D ${branchName}`,
+      } && git worktree prune && git branch -D ${branchName}`,
     );
     spinner.succeed(`Worktree ${branchName} was removed.`);
   } catch {

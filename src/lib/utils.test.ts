@@ -1,4 +1,3 @@
-import type { WorktreeListEntry } from "./types.js";
 import { conjoin, worktreeListEntryToListName } from "./utils.js";
 
 describe("conjoin", () => {
