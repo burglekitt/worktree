@@ -26,7 +26,7 @@ export default class Delete extends BaseCommand {
 
   private getWorktreeChoices(worktrees: WorktreeListEntry[]) {
     const choices = worktrees.map((wt) => ({
-      name: worktreeListEntryToListName(wt),
+      name: worktreeListEntryToListName(wt, "red"),
       value: wt,
     }));
     const safeToRemove = choices.filter(({ value }) => value.safeToRemove);
