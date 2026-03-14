@@ -63,7 +63,7 @@ describe("list command", () => {
     await list.run();
 
     expect((list as any).parse).toHaveBeenCalledWith(List);
-    expect(mockGetWorktreeList).toHaveBeenCalledWith();
+    expect(mockGetWorktreeList).toHaveBeenCalledWith({ includeCurrent: true });
     expect(ora).toHaveBeenCalledWith("Gathering worktree list");
     expect(spinnerMocks.start).toHaveBeenCalledTimes(1);
     expect(spinnerMocks.stop).toHaveBeenCalledTimes(1);
