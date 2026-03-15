@@ -12,6 +12,12 @@ export default withNextra({
   basePath: isProduction ? "/worktree" : "",
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "github.com",
+      },
+    ],
   },
   turbopack: {
     resolveAlias: {

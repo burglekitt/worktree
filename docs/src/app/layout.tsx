@@ -1,8 +1,9 @@
+import Image from "next/image";
 import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
-import { Footer, Layout, Navbar } from "nextra-theme-docs";
+import { Layout, Navbar } from "nextra-theme-docs";
 import type { ReactNode } from "react";
-import { cliVersion } from "../lib/site-version";
+import { Footer } from "../components/Footer";
 import "nextra-theme-docs/style.css";
 
 export const metadata = {
@@ -25,11 +26,11 @@ const navbar = (
           gap: "0.5rem",
         }}
       >
-        <img
+        <Image
           src="https://github.com/burglekitt.png?size=64"
           alt="Burglekitt"
-          width="24"
-          height="24"
+          width={24}
+          height={24}
           style={{ borderRadius: "999px" }}
         />
         Worktree
@@ -37,31 +38,6 @@ const navbar = (
     }
     projectLink="https://github.com/burglekitt/worktree"
   />
-);
-
-const footer = (
-  <Footer>
-    <div style={{ display: "grid", gap: "0.5rem" }}>
-      <div
-        style={{ alignItems: "center", display: "inline-flex", gap: "0.5rem" }}
-      >
-        <img
-          src="https://github.com/burglekitt.png?size=64"
-          alt="Burglekitt"
-          width="20"
-          height="20"
-          style={{ borderRadius: "999px" }}
-        />
-        <span>MIT {new Date().getFullYear()} © Burglekitt</span>
-      </div>
-      <div>CLI Version: v{cliVersion}</div>
-      <div>
-        Maintainers: <a href="https://github.com/craigcurtis">Craig Curtis</a>
-        {" · "}
-        <a href="https://github.com/burglekitt">Burglekitt</a>
-      </div>
-    </div>
-  </Footer>
 );
 
 export default async function RootLayout({
@@ -73,7 +49,11 @@ export default async function RootLayout({
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head />
       <body>
-        <Layout navbar={navbar} pageMap={await getPageMap()} footer={footer}>
+        <Layout
+          navbar={navbar}
+          pageMap={await getPageMap()}
+          footer={<Footer />}
+        >
           {children}
         </Layout>
       </body>
