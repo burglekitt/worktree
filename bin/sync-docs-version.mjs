@@ -1,7 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 const rootPackagePath = new URL("../package.json", import.meta.url);
-const docsPackagePath = new URL("../docs/package.json", import.meta.url);
 const docsVersionFilePath = new URL(
   "../docs/src/lib/site-version.ts",
   import.meta.url,
@@ -12,7 +11,6 @@ const docsSiteMetaFilePath = new URL(
 );
 
 const rootPackage = JSON.parse(await readFile(rootPackagePath, "utf8"));
-const docsPackage = JSON.parse(await readFile(docsPackagePath, "utf8"));
 
 const rootVersion = rootPackage.version;
 
@@ -42,23 +40,30 @@ const maintainers = contributors
   })
   .filter(Boolean);
 
+const formatMaintainersAsTs = (items) => {
+  const lines = items.flatMap((maintainer) => [
+    "  {",
+    `    name: ${JSON.stringify(maintainer.name)},`,
+    `    profileUrl: ${JSON.stringify(maintainer.profileUrl)},`,
+    `    avatarUrl: ${JSON.stringify(maintainer.avatarUrl)},`,
+    "  },",
+  ]);
+
+  if (lines.length === 0) {
+    return "[]";
+  }
+
+  return `[\n${lines.join("\n")}\n]`;
+};
+
 if (!rootVersion) {
   throw new Error("Root package.json is missing a version field.");
-}
-
-if (docsPackage.version !== rootVersion) {
-  docsPackage.version = rootVersion;
-  await writeFile(docsPackagePath, `${JSON.stringify(docsPackage, null, 2)}\n`);
 }
 
 const versionFileContent = `export const cliVersion = "${rootVersion}";\n`;
 await writeFile(docsVersionFilePath, versionFileContent);
 
-const siteMetaFileContent = `export const cliVersion = "${rootVersion}";\n\nexport const maintainers = ${JSON.stringify(
-  maintainers,
-  null,
-  2,
-)} as const;\n`;
+const siteMetaFileContent = `export const cliVersion = "${rootVersion}";\n\nexport const maintainers = ${formatMaintainersAsTs(maintainers)} as const;\n`;
 await writeFile(docsSiteMetaFilePath, siteMetaFileContent);
 
-console.log(`[docs] Synced docs version to ${rootVersion}`);
+console.log(`[docs] Synced site metadata to CLI version ${rootVersion}`);
