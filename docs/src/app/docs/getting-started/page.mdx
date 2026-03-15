@@ -2,6 +2,8 @@
 title: Getting Started
 ---
 
+import { Tabs } from "nextra/components";
+
 # Getting Started
 
 `worktree` streamlines common Git worktree tasks into a repeatable workflow.
@@ -10,15 +12,21 @@ title: Getting Started
 
 Install globally:
 
-```bash
-npm install -g @burglekitt/worktree
-```
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tabs.Tab>```bash npm install -g @burglekitt/worktree ```</Tabs.Tab>
+  <Tabs.Tab>```bash pnpm add -g @burglekitt/worktree ```</Tabs.Tab>
+  <Tabs.Tab>```bash yarn global add @burglekitt/worktree ```</Tabs.Tab>
+  <Tabs.Tab>```bash bun add -g @burglekitt/worktree ```</Tabs.Tab>
+</Tabs>
 
 Or run directly without global install:
 
-```bash
-npx @burglekitt/worktree --help
-```
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tabs.Tab>```bash npx @burglekitt/worktree --help ```</Tabs.Tab>
+  <Tabs.Tab>```bash pnpm dlx @burglekitt/worktree --help ```</Tabs.Tab>
+  <Tabs.Tab>```bash yarn dlx @burglekitt/worktree --help ```</Tabs.Tab>
+  <Tabs.Tab>```bash bunx @burglekitt/worktree --help ```</Tabs.Tab>
+</Tabs>
 
 ## Initial Configuration
 
