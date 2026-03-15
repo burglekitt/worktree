@@ -2,7 +2,6 @@
 /dist
 node_modules
 oclif.manifest.json
-*.tsbuildinfo
 !pnpm-lock.yaml
 /_*
 **/_pagefind/
