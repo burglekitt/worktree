@@ -1,6 +1,11 @@
 import Image from "next/image";
 import { Footer as NextraFooter } from "nextra-theme-docs";
-import { cliVersion, maintainers } from "../lib/site-meta";
+import {
+  cliVersion,
+  maintainers,
+  projectOwnerAvatarUrl,
+  projectOwnerName,
+} from "../lib/site-meta";
 
 export function Footer() {
   return (
@@ -14,13 +19,15 @@ export function Footer() {
           }}
         >
           <Image
-            src="https://github.com/burglekitt.png?size=64"
-            alt="Burglekitt"
+            src={projectOwnerAvatarUrl}
+            alt={projectOwnerName}
             width={24}
             height={24}
             style={{ borderRadius: "999px" }}
           />
-          <span>MIT {new Date().getFullYear()} © Burglekitt</span>
+          <span>
+            MIT {new Date().getFullYear()} © {projectOwnerName}
+          </span>
         </div>
         <div>CLI Version: v{cliVersion}</div>
         <div>

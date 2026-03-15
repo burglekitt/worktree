@@ -1,10 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 const rootPackagePath = new URL("../package.json", import.meta.url);
-const docsVersionFilePath = new URL(
-  "../docs/src/lib/site-version.ts",
-  import.meta.url,
-);
 const docsSiteMetaFilePath = new URL(
   "../docs/src/lib/site-meta.ts",
   import.meta.url,
@@ -13,6 +9,70 @@ const docsSiteMetaFilePath = new URL(
 const rootPackage = JSON.parse(await readFile(rootPackagePath, "utf8"));
 
 const rootVersion = rootPackage.version;
+const projectDescription =
+  typeof rootPackage.description === "string"
+    ? rootPackage.description.trim()
+    : "";
+
+const normalizeGithubUrl = (value) => {
+  if (typeof value !== "string" || value.trim() === "") return null;
+
+  return value
+    .trim()
+    .replace(/^git\+/, "")
+    .replace(/\.git$/, "");
+};
+
+const getRepositoryUrl = (pkg) => {
+  const homepage = normalizeGithubUrl(pkg.homepage);
+  if (homepage) return homepage;
+
+  const repository = pkg.repository;
+  if (typeof repository === "string") {
+    return normalizeGithubUrl(repository);
+  }
+
+  if (repository && typeof repository === "object") {
+    return normalizeGithubUrl(repository.url);
+  }
+
+  return null;
+};
+
+const getRepositoryInfo = (repositoryUrl) => {
+  if (!repositoryUrl) return null;
+
+  try {
+    const parsedUrl = new URL(repositoryUrl);
+    if (parsedUrl.hostname !== "github.com") return null;
+
+    const [owner, repo] = parsedUrl.pathname
+      .split("/")
+      .filter(Boolean)
+      .slice(0, 2);
+
+    if (!owner || !repo) return null;
+
+    return {
+      owner,
+      repo,
+      url: `https://github.com/${owner}/${repo}`,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const repositoryInfo = getRepositoryInfo(getRepositoryUrl(rootPackage));
+const packageName =
+  typeof rootPackage.name === "string" ? rootPackage.name.trim() : "";
+const defaultProjectName = packageName.split("/").pop() || "project";
+const projectName =
+  defaultProjectName.charAt(0).toUpperCase() + defaultProjectName.slice(1);
+const metadataTitleTemplate = `%s – ${projectName}`;
+const projectLink = repositoryInfo?.url || "https://github.com";
+const projectOwnerName = repositoryInfo?.owner || projectName;
+const projectOwnerAvatarUrl = `https://github.com/${projectOwnerName}.png?size=64`;
 
 const contributors = Array.isArray(rootPackage.contributors)
   ? rootPackage.contributors
@@ -60,10 +120,7 @@ if (!rootVersion) {
   throw new Error("Root package.json is missing a version field.");
 }
 
-const versionFileContent = `export const cliVersion = "${rootVersion}";\n`;
-await writeFile(docsVersionFilePath, versionFileContent);
-
-const siteMetaFileContent = `export const cliVersion = "${rootVersion}";\n\nexport const maintainers = ${formatMaintainersAsTs(maintainers)} as const;\n`;
+const siteMetaFileContent = `import type { Metadata } from "next";\n\nexport const cliVersion = "${rootVersion}";\nexport const projectName = ${JSON.stringify(projectName)};\nexport const projectDescription = ${JSON.stringify(projectDescription)};\nexport const projectLink = ${JSON.stringify(projectLink)};\nexport const projectOwnerName = ${JSON.stringify(projectOwnerName)};\nexport const projectOwnerAvatarUrl = ${JSON.stringify(projectOwnerAvatarUrl)};\n\nexport const metadata: Metadata = {\n  title: {\n    default: projectName,\n    template: ${JSON.stringify(metadataTitleTemplate)},\n  },\n  description: projectDescription,\n};\n\nexport const maintainers = ${formatMaintainersAsTs(maintainers)} as const;\n`;
 await writeFile(docsSiteMetaFilePath, siteMetaFileContent);
 
 console.log(`[docs] Synced site metadata to CLI version ${rootVersion}`);
