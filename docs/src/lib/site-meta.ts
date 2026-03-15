@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export const maintainers = [
   {
-    name: "Baldur Pan",
+    name: "Baldur Páll Hólmgeirsson",
     profileUrl: "https://github.com/baldurpan",
     avatarUrl: "https://github.com/baldurpan.png?size=64",
   },
