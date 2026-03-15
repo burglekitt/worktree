@@ -13,7 +13,10 @@
     "lint": "biome lint",
     "lint:fix": "biome lint --write",
     "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm test",
-    "prepublishOnly": "pnpm build && pnpm test"
+    "prepublishOnly": "pnpm build && pnpm test",
+    "docs:dev": "pnpm --filter docs dev",
+    "docs:start": "pnpm --filter docs start",
+    "docs:build": "pnpm --filter docs build"
   },
   "publishConfig": {
     "access": "public"
