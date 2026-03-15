@@ -15,8 +15,8 @@
     "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm test",
     "prepublishOnly": "pnpm build && pnpm test",
     "docs:sync-version": "node ./bin/sync-docs-version.mjs && biome format ./docs/src/lib/site-meta.ts --write",
+    "docs:test": "pnpm --filter docs test",
     "docs:dev": "pnpm docs:sync-version && pnpm --filter docs dev",
-    "docs:start": "pnpm docs:sync-version && pnpm --filter docs start",
     "docs:build": "pnpm docs:sync-version && pnpm --filter docs build"
   },
   "publishConfig": {

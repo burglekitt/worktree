@@ -1,11 +1,12 @@
-import Image from "next/image";
 import { Footer as NextraFooter } from "nextra-theme-docs";
 import {
   cliVersion,
   maintainers,
   projectOwnerAvatarUrl,
   projectOwnerName,
+  projectOwnerProfileUrl,
 } from "../lib/site-meta";
+import { ProfileAvatarLink } from "./ProfileAvatarLink";
 
 export function Footer() {
   return (
@@ -18,15 +19,22 @@ export function Footer() {
             gap: "0.5rem",
           }}
         >
-          <Image
-            src={projectOwnerAvatarUrl}
-            alt={projectOwnerName}
-            width={24}
-            height={24}
-            style={{ borderRadius: "999px" }}
+          <ProfileAvatarLink
+            href={projectOwnerProfileUrl}
+            name={projectOwnerName}
+            avatarUrl={projectOwnerAvatarUrl}
+            style={{ gap: 0 }}
           />
           <span>
-            MIT {new Date().getFullYear()} © {projectOwnerName}
+            MIT {new Date().getFullYear()} ©{" "}
+            <a
+              href={projectOwnerProfileUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: "inherit" }}
+            >
+              {projectOwnerName}
+            </a>
           </span>
         </div>
         <div>CLI Version: v{cliVersion}</div>
@@ -34,26 +42,13 @@ export function Footer() {
           <div style={{ marginBottom: "0.5rem" }}>Maintainers:</div>
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             {maintainers.map((maintainer) => (
-              <a
+              <ProfileAvatarLink
                 key={maintainer.profileUrl}
                 href={maintainer.profileUrl}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
-              >
-                <Image
-                  src={maintainer.avatarUrl}
-                  alt={maintainer.name}
-                  width={32}
-                  height={32}
-                  style={{ borderRadius: "999px" }}
-                />
-                {maintainer.name}
-              </a>
+                name={maintainer.name}
+                avatarUrl={maintainer.avatarUrl}
+                showName
+              />
             ))}
           </div>
         </div>

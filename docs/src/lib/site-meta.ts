@@ -6,6 +6,7 @@ export const projectName = "Worktree";
 export const projectDescription = "A CLI tool for managing git worktrees with enhanced workflow features";
 export const projectLink = "https://github.com/burglekitt/worktree";
 export const projectOwnerName = "burglekitt";
+export const projectOwnerProfileUrl = "https://github.com/burglekitt";
 export const projectOwnerAvatarUrl = "https://github.com/burglekitt.png?size=64";
 
 export const metadata: Metadata = {

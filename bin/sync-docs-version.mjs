@@ -72,6 +72,7 @@ const projectName =
 const metadataTitleTemplate = `%s – ${projectName}`;
 const projectLink = repositoryInfo?.url || "https://github.com";
 const projectOwnerName = repositoryInfo?.owner || projectName;
+const projectOwnerProfileUrl = `https://github.com/${projectOwnerName}`;
 const projectOwnerAvatarUrl = `https://github.com/${projectOwnerName}.png?size=64`;
 
 const contributors = Array.isArray(rootPackage.contributors)
@@ -120,7 +121,7 @@ if (!rootVersion) {
   throw new Error("Root package.json is missing a version field.");
 }
 
-const siteMetaFileContent = `// Generated file. Do not edit directly.\nimport type { Metadata } from "next";\n\nexport const cliVersion = "${rootVersion}";\nexport const projectName = ${JSON.stringify(projectName)};\nexport const projectDescription = ${JSON.stringify(projectDescription)};\nexport const projectLink = ${JSON.stringify(projectLink)};\nexport const projectOwnerName = ${JSON.stringify(projectOwnerName)};\nexport const projectOwnerAvatarUrl = ${JSON.stringify(projectOwnerAvatarUrl)};\n\nexport const metadata: Metadata = {\n  title: {\n    default: projectName,\n    template: ${JSON.stringify(metadataTitleTemplate)},\n  },\n  description: projectDescription,\n};\n\nexport const maintainers = ${formatMaintainersAsTs(maintainers)} as const;\n`;
+const siteMetaFileContent = `// Generated file. Do not edit directly.\nimport type { Metadata } from "next";\n\nexport const cliVersion = "${rootVersion}";\nexport const projectName = ${JSON.stringify(projectName)};\nexport const projectDescription = ${JSON.stringify(projectDescription)};\nexport const projectLink = ${JSON.stringify(projectLink)};\nexport const projectOwnerName = ${JSON.stringify(projectOwnerName)};\nexport const projectOwnerProfileUrl = ${JSON.stringify(projectOwnerProfileUrl)};\nexport const projectOwnerAvatarUrl = ${JSON.stringify(projectOwnerAvatarUrl)};\n\nexport const metadata: Metadata = {\n  title: {\n    default: projectName,\n    template: ${JSON.stringify(metadataTitleTemplate)},\n  },\n  description: projectDescription,\n};\n\nexport const maintainers = ${formatMaintainersAsTs(maintainers)} as const;\n`;
 await writeFile(docsSiteMetaFilePath, siteMetaFileContent);
 
 console.log(`[docs] Synced site metadata to CLI version ${rootVersion}`);

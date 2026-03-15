@@ -51,6 +51,7 @@ jobs:
           fi
       - name: Verify generated docs metadata is committed
         run: git diff --exit-code -- docs/src/lib/site-meta.ts
+      - run: pnpm docs:test
       - run: pnpm format
       - run: pnpm lint
       - run: pnpm typecheck

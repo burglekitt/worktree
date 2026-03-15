@@ -1,16 +1,17 @@
-import Image from "next/image";
-
 import { Navbar as NextraNavbar } from "nextra-theme-docs";
 import {
   projectLink,
   projectName,
   projectOwnerAvatarUrl,
   projectOwnerName,
+  projectOwnerProfileUrl,
 } from "../lib/site-meta";
+import { ProfileAvatarLink } from "./ProfileAvatarLink";
 
 export function Navbar() {
   return (
     <NextraNavbar
+      logoLink={false}
       logo={
         <span
           style={{
@@ -20,12 +21,11 @@ export function Navbar() {
             gap: "0.5rem",
           }}
         >
-          <Image
-            src={projectOwnerAvatarUrl}
-            alt={projectOwnerName}
-            width={24}
-            height={24}
-            style={{ borderRadius: "999px" }}
+          <ProfileAvatarLink
+            href={projectOwnerProfileUrl}
+            name={projectOwnerName}
+            avatarUrl={projectOwnerAvatarUrl}
+            style={{ gap: 0 }}
           />
           {projectName}
         </span>
