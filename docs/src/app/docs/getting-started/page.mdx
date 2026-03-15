@@ -3,6 +3,7 @@ title: Getting Started
 ---
 
 import { Tabs } from "nextra/components";
+import { TerminalBlock } from "../../../components/TerminalBlock";
 
 # Getting Started
 
@@ -13,19 +14,35 @@ import { Tabs } from "nextra/components";
 Install globally:
 
 <Tabs items={["npm", "pnpm", "yarn", "bun"]}>
-  <Tabs.Tab>```bash npm install -g @burglekitt/worktree ```</Tabs.Tab>
-  <Tabs.Tab>```bash pnpm add -g @burglekitt/worktree ```</Tabs.Tab>
-  <Tabs.Tab>```bash yarn global add @burglekitt/worktree ```</Tabs.Tab>
-  <Tabs.Tab>```bash bun add -g @burglekitt/worktree ```</Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>npm install -g @burglekitt/worktree</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>pnpm add -g @burglekitt/worktree</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>yarn global add @burglekitt/worktree</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>bun add -g @burglekitt/worktree</TerminalBlock>
+  </Tabs.Tab>
 </Tabs>
 
 Or run directly without global install:
 
 <Tabs items={["npm", "pnpm", "yarn", "bun"]}>
-  <Tabs.Tab>```bash npx @burglekitt/worktree --help ```</Tabs.Tab>
-  <Tabs.Tab>```bash pnpm dlx @burglekitt/worktree --help ```</Tabs.Tab>
-  <Tabs.Tab>```bash yarn dlx @burglekitt/worktree --help ```</Tabs.Tab>
-  <Tabs.Tab>```bash bunx @burglekitt/worktree --help ```</Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>npx @burglekitt/worktree --help</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>pnpm dlx @burglekitt/worktree --help</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>yarn dlx @burglekitt/worktree --help</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>bunx @burglekitt/worktree --help</TerminalBlock>
+  </Tabs.Tab>
 </Tabs>
 
 ## Initial Configuration

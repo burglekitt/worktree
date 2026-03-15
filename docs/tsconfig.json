@@ -24,7 +24,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "src/components/TerminalBlock.mdx"
   ],
   "exclude": ["node_modules"]
 }
