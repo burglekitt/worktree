@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { vi } from "vitest";
 import { TerminalBlock } from "./TerminalBlock";
 
 type MockCodeProps = {
