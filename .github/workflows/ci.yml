@@ -41,6 +41,9 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm docs:sync-version
+      - name: Verify generated docs metadata is committed
+        run: git diff --exit-code -- docs/src/lib/site-version.ts docs/src/lib/site-meta.ts
       - run: pnpm format
       - run: pnpm lint
       - run: pnpm typecheck

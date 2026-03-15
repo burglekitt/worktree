@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "predev": "node ../bin/sync-docs-version.mjs",
     "dev": "next dev --turbopack",
+    "prebuild": "node ../bin/sync-docs-version.mjs",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
+    "prestart": "node ../bin/sync-docs-version.mjs",
     "start": "next start"
   },
   "keywords": [],
