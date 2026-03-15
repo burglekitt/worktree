@@ -58,9 +58,7 @@ describe("worktreeListEntryToListName", () => {
       remoteExists: false,
     });
 
-    expect(result).toContain(
-      "Remote branch origin/feature/test does not exist",
-    );
+    expect(result).toContain("Remote removed");
   });
 
   it("should not show remote branch error when remote is empty", () => {
@@ -140,9 +138,7 @@ describe("worktreeListEntryToListName", () => {
     });
 
     expect(result).toContain("Path does not exist");
-    expect(result).toContain(
-      "Remote branch origin/feature/test does not exist",
-    );
+    expect(result).toContain("Remote removed");
     expect(result).toContain("Ahead: 2, Behind: 1");
     expect(result).not.toContain("uncommitted changes"); // Should not be plural
     expect(result).toContain("1 uncommitted change");

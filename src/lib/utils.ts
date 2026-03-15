@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import chalk, { type ColorName } from "chalk";
 import type { WorktreeListEntry } from "./types.js";
 
 export function conjoin(
@@ -21,13 +21,16 @@ export function strToNum(str: string): number | undefined {
   }
 }
 
-export function worktreeListEntryToListName(wt: WorktreeListEntry) {
+export function worktreeListEntryToListName(
+  wt: WorktreeListEntry,
+  color: ColorName = "gray",
+): string {
   const details = [];
   if (!wt.pathExists) {
     details.push("Path does not exist");
   }
   if (wt.remote && !wt.remoteExists) {
-    details.push(`Remote branch ${wt.remote} does not exist`);
+    details.push(`Remote removed`);
   }
   if (wt.ahead || wt.behind) {
     details.push(`Ahead: ${wt.ahead ?? 0}, Behind: ${wt.behind ?? 0}`);
@@ -38,8 +41,9 @@ export function worktreeListEntryToListName(wt: WorktreeListEntry) {
     );
   }
 
+  const currentStr = wt.isCurrent ? chalk.green(" (Current)") : "";
   const detailsStr =
-    details.length > 0 ? chalk.red(`(${details.join(", ")})`) : "";
+    details.length > 0 ? chalk[color](` (${details.join(", ")})`) : "";
 
-  return `${wt.branchName} ${detailsStr}`;
+  return `${wt.branchName}${currentStr}${detailsStr}`;
 }
