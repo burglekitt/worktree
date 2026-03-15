@@ -3,7 +3,7 @@
   "editor.formatOnSaveMode": "file",
   "editor.defaultFormatter": "biomejs.biome",
   "prettier.requireConfig": false,
-  "prettier.enable": true,
+  "prettier.enable": false,
   "[typescript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
