@@ -42,8 +42,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm docs:sync-version
+      - name: Ensure no nested docs lockfile is committed
+        run: |
+          if [[ -f docs/pnpm-lock.yaml ]]; then
+            echo "docs/pnpm-lock.yaml should not exist in this workspace."
+            echo "Use the root pnpm-lock.yaml as the single lockfile source of truth."
+            exit 1
+          fi
       - name: Verify generated docs metadata is committed
-        run: git diff --exit-code -- docs/src/lib/site-version.ts docs/src/lib/site-meta.ts
+        run: git diff --exit-code -- docs/src/lib/site-meta.ts
       - run: pnpm format
       - run: pnpm lint
       - run: pnpm typecheck
