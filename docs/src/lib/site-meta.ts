@@ -1,3 +1,4 @@
+// Generated file. Do not edit directly.
 import type { Metadata } from "next";
 
 export const cliVersion = "0.6.0";
