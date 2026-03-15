@@ -1,0 +1,28 @@
+---
+title: branch
+---
+
+# `worktree branch`
+
+Create a new branch in a dedicated worktree.
+
+## Usage
+
+```bash
+worktree branch <name>
+worktree branch <name> --source <remote-branch>
+```
+
+## Examples
+
+```bash
+worktree branch feature/add-bulk-actions
+worktree branch feature/add-bulk-actions --source origin/release/1.4
+```
+
+## What It Does
+
+1. Creates a branch from your configured source branch.
+2. Adds a worktree under `<repo>.worktrees/<branch-name>`.
+3. Copies `.env` files into the new worktree.
+4. Opens the worktree in your configured editor (if configured).

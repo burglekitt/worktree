@@ -14,6 +14,8 @@ It wraps the most common worktree tasks into a small workflow-oriented tool:
 
 This README focuses on the fast path. The documentation website will cover deeper examples, advanced workflows, integrations, and troubleshooting.
 
+Docs: https://burglekitt.github.io/worktree
+
 ## Why This Exists
 
 Git worktrees are great when you want multiple branches checked out at once, but the raw commands are still a bit awkward for everyday use. In practice, teams usually want a repeatable flow like this:

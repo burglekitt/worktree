@@ -1,0 +1,88 @@
+---
+title: Getting Started
+---
+
+import { Tabs } from "nextra/components";
+import { TerminalBlock } from "../../../components/TerminalBlock";
+
+# Getting Started
+
+`worktree` streamlines common Git worktree tasks into a repeatable workflow.
+
+## Install
+
+Install globally:
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tabs.Tab>
+    <TerminalBlock>npm install -g @burglekitt/worktree</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>pnpm add -g @burglekitt/worktree</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>yarn global add @burglekitt/worktree</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>bun add -g @burglekitt/worktree</TerminalBlock>
+  </Tabs.Tab>
+</Tabs>
+
+Or run directly without global install:
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tabs.Tab>
+    <TerminalBlock>npx @burglekitt/worktree --help</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>pnpm dlx @burglekitt/worktree --help</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>yarn dlx @burglekitt/worktree --help</TerminalBlock>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    <TerminalBlock>bunx @burglekitt/worktree --help</TerminalBlock>
+  </Tabs.Tab>
+</Tabs>
+
+## Initial Configuration
+
+Run once inside your repository:
+
+```bash
+worktree config
+```
+
+Common values:
+
+- `defaultSourceBranch`: usually `origin/main`
+- `codeEditor`: usually `code`
+
+## First Workflow
+
+Create your first branch worktree:
+
+```bash
+worktree branch feature/improve-readme
+```
+
+This command will:
+
+1. Branch from your configured source branch.
+2. Create a worktree under `<repo>.worktrees/feature/improve-readme`.
+3. Copy `.env` and `.env.local` from your main repository.
+4. Open the new worktree in your configured editor.
+
+## Requirements
+
+- Git available on your `PATH`
+- Node.js installed
+- Existing Git repository
+
+If you use automatic editor opening, ensure your editor command is available in your shell (for example, `code`).
+
+## Next
+
+- [Command Reference](/docs/commands)
+- [Configuration](/docs/configuration)
+- [Guides](/docs/guides/context-switching)

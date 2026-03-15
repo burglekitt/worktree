@@ -1,0 +1,23 @@
+---
+title: Editor Integration
+---
+
+# Editor Integration
+
+Configure your editor command once:
+
+```bash
+worktree config codeEditor code
+```
+
+Then open any worktree quickly:
+
+```bash
+worktree open feature/add-bulk-actions
+```
+
+If omitted, `worktree open` will show an interactive branch picker.
+
+Similarly, if omitted, `worktree checkout` will show an interactive remote branch picker.
+
+For non-VS Code editors, set `codeEditor` to the matching shell command.

@@ -1,0 +1,29 @@
+---
+title: Team Conventions
+---
+
+# Team Conventions
+
+Use conventions that keep worktree names and cleanup behavior predictable.
+
+## Naming
+
+- `feature/<topic>` for feature work
+- `fix/<topic>` for bug fixes
+- `chore/<topic>` for maintenance
+
+## Source Branch
+
+Set a shared default source branch during setup:
+
+```bash
+worktree config defaultSourceBranch origin/main
+```
+
+## Cleanup Habit
+
+Run periodic cleanup:
+
+```bash
+worktree cleanup
+```

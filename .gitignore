@@ -2,5 +2,11 @@
 /dist
 node_modules
 oclif.manifest.json
+!pnpm-lock.yaml
 *.tsbuildinfo
 /_*
+**/_pagefind/
+.next
+docs/out/
+docs/.vercel/
+docs/pnpm-lock.yaml

@@ -1,0 +1,38 @@
+---
+title: FAQ
+---
+
+# FAQ
+
+## Why use Git worktrees instead of stashing?
+
+Worktrees let you keep multiple branches checked out simultaneously in separate directories. This avoids repeated stash/apply cycles and reduces context-switch overhead.
+
+## Does this modify my main repository history?
+
+No. Worktrees are alternate checkouts that still point to the same underlying Git repository.
+
+## Can I use this with private GitHub repositories?
+
+Yes. Any repository you can clone and operate with Git locally can be managed.
+
+## Is there a required branch naming scheme?
+
+No hard requirement, but a team naming convention (for example `feature/*`, `fix/*`, `chore/*`) makes list and cleanup flows easier.
+
+## Which editor can I open worktrees in?
+
+Any editor command that can open a directory. Configure your preferred command with:
+
+```bash
+worktree config codeEditor <command>
+```
+
+## Where can I see all command options?
+
+Use the command reference pages under `/docs/commands` and run:
+
+```bash
+worktree --help
+worktree <command> --help
+```
