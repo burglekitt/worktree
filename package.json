@@ -14,9 +14,10 @@
     "lint:fix": "biome lint --write",
     "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm test",
     "prepublishOnly": "pnpm build && pnpm test",
-    "docs:dev": "pnpm --filter docs dev",
-    "docs:start": "pnpm --filter docs start",
-    "docs:build": "pnpm --filter docs build"
+    "docs:sync-version": "node ./bin/sync-docs-version.mjs",
+    "docs:dev": "pnpm docs:sync-version && pnpm --filter docs dev",
+    "docs:start": "pnpm docs:sync-version && pnpm --filter docs start",
+    "docs:build": "pnpm docs:sync-version && pnpm --filter docs build"
   },
   "publishConfig": {
     "access": "public"

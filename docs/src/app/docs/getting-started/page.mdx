@@ -4,4 +4,60 @@ title: Getting Started
 
 # Getting Started
 
-Coming soon.
+`worktree` streamlines common Git worktree tasks into a repeatable workflow.
+
+## Install
+
+Install globally:
+
+```bash
+npm install -g @burglekitt/worktree
+```
+
+Or run directly without global install:
+
+```bash
+npx @burglekitt/worktree --help
+```
+
+## Initial Configuration
+
+Run once inside your repository:
+
+```bash
+worktree config
+```
+
+Common values:
+
+- `defaultSourceBranch`: usually `origin/main`
+- `codeEditor`: usually `code`
+
+## First Workflow
+
+Create your first branch worktree:
+
+```bash
+worktree branch feature/improve-readme
+```
+
+This command will:
+
+1. Branch from your configured source branch.
+2. Create a worktree under `<repo>.worktrees/feature/improve-readme`.
+3. Copy `.env` and `.env.local` from your main repository.
+4. Open the new worktree in your configured editor.
+
+## Requirements
+
+- Git available on your `PATH`
+- Node.js installed
+- Existing Git repository
+
+If you use automatic editor opening, ensure your editor command is available in your shell (for example, `code`).
+
+## Next
+
+- [Command Reference](/docs/commands)
+- [Configuration](/docs/configuration)
+- [Guides](/docs/guides/context-switching)

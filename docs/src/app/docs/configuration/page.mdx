@@ -1,0 +1,27 @@
+---
+title: Configuration
+---
+
+# Configuration
+
+`worktree` stores config in local Git config under `burglekitt.worktree.*`.
+
+## Common Keys
+
+- `defaultSourceBranch` (example: `origin/main`)
+- `codeEditor` (example: `code`)
+
+## Commands
+
+```bash
+worktree config --list
+worktree config --missing
+worktree config defaultSourceBranch origin/main
+worktree config codeEditor code
+```
+
+## Recommended Team Baseline
+
+1. Agree on one source branch (`origin/main` for most teams).
+2. Standardize branch naming conventions.
+3. Keep editor command consistent across local setups.

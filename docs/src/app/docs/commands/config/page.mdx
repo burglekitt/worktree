@@ -1,0 +1,26 @@
+---
+title: config
+---
+
+# `worktree config`
+
+Configure defaults and inspect current configuration.
+
+## Usage
+
+```bash
+worktree config
+worktree config <key> <value>
+worktree config --list
+worktree config --missing
+```
+
+## Examples
+
+```bash
+worktree config defaultSourceBranch origin/main
+worktree config codeEditor code
+worktree config --list
+```
+
+Configuration is stored in local Git config under `burglekitt.worktree.*`.
