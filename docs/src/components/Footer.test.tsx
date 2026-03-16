@@ -23,9 +23,7 @@ describe("Footer", () => {
   it("renders org and maintainer links", () => {
     render(<Footer />);
 
-    expect(
-      screen.getByText(/CLI Version: v\d+\.\d+\.\d+/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/CLI Version: v\d+\.\d+\.\d+/)).toBeInTheDocument();
     expect(screen.getByText("Maintainers:")).toBeInTheDocument();
 
     const orgLinks = screen.getAllByRole("link", { name: "burglekitt" });
