@@ -44,6 +44,18 @@ describe("cleanup command", () => {
     safeToRemove: true,
   };
 
+  const safeWorktreeTwo = {
+    path: "/path/to/project.worktrees/feature/safe-two",
+    branchName: "feature/safe-two",
+    remote: "origin/feature/safe-two",
+    ahead: 0,
+    behind: 0,
+    remoteExists: false,
+    pathExists: true,
+    uncommittedChanges: 0,
+    safeToRemove: true,
+  };
+
   const unsafeWorktree = {
     path: "/path/to/project.worktrees/feature/unsafe",
     branchName: "feature/unsafe",
@@ -91,6 +103,7 @@ describe("cleanup command", () => {
       safeWorktree,
       unsafeWorktree,
     ]);
+    const logSpy = vi.spyOn(cleanup, "log").mockImplementation(() => {});
     mockConfirm.mockResolvedValue(true);
     const mockRemove = vi
       .spyOn(git, "gitRemoveWorktreesWithProgress")
@@ -104,14 +117,23 @@ describe("cleanup command", () => {
 
     expect(spinnerMocks.info).toHaveBeenCalledTimes(1);
     expect(mockConfirm).toHaveBeenCalledWith({
-      message: "Are you sure you want to delete them?",
+      message: "Are you sure you want to delete it?",
       default: false,
     });
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("feature/safe"),
+    );
+    expect(
+      logSpy.mock.calls.some((call) =>
+        (call[0] ?? "").includes("feature/unsafe"),
+      ),
+    ).toBe(false);
     expect(mockRemove).toHaveBeenCalledWith([safeWorktree]);
   });
 
   it("does not remove worktrees when confirmation is declined", async () => {
     vi.spyOn(git, "gitGetWorktreeList").mockResolvedValue([safeWorktree]);
+    const logSpy = vi.spyOn(cleanup, "log").mockImplementation(() => {});
     mockConfirm.mockResolvedValue(false);
     const mockRemove = vi
       .spyOn(git, "gitRemoveWorktreesWithProgress")
@@ -124,10 +146,52 @@ describe("cleanup command", () => {
     await cleanup.run();
 
     expect(mockConfirm).toHaveBeenCalledWith({
+      message: "Are you sure you want to delete it?",
+      default: false,
+    });
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("feature/safe"),
+    );
+    expect(mockRemove).not.toHaveBeenCalled();
+  });
+
+  it("uses plural confirmation text and lists all safe worktrees", async () => {
+    vi.spyOn(git, "gitGetWorktreeList").mockResolvedValue([
+      safeWorktree,
+      safeWorktreeTwo,
+      unsafeWorktree,
+    ]);
+    const logSpy = vi.spyOn(cleanup, "log").mockImplementation(() => {});
+    mockConfirm.mockResolvedValue(true);
+    const mockRemove = vi
+      .spyOn(git, "gitRemoveWorktreesWithProgress")
+      .mockResolvedValue(undefined);
+
+    (cleanup as any).parse = vi.fn().mockResolvedValue({
+      flags: { force: false },
+    });
+
+    await cleanup.run();
+
+    expect(spinnerMocks.info).toHaveBeenCalledWith(
+      "Found 2 worktree branches that are marked safe to remove.",
+    );
+    expect(mockConfirm).toHaveBeenCalledWith({
       message: "Are you sure you want to delete them?",
       default: false,
     });
-    expect(mockRemove).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("feature/safe"),
+    );
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("feature/safe-two"),
+    );
+    expect(
+      logSpy.mock.calls.some((call) =>
+        (call[0] ?? "").includes("feature/unsafe"),
+      ),
+    ).toBe(false);
+    expect(mockRemove).toHaveBeenCalledWith([safeWorktree, safeWorktreeTwo]);
   });
 
   it("skips confirmation and removes safe worktrees when --force is set", async () => {
