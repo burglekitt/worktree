@@ -7,6 +7,7 @@ import {
   gitGetWorktreeList,
   gitRemoveWorktreesWithProgress,
 } from "../lib/git.js";
+import { worktreeListEntryToListName } from "../lib/utils.js";
 
 export default class Cleanup extends BaseCommand {
   static override description =
@@ -31,10 +32,14 @@ export default class Cleanup extends BaseCommand {
     }
 
     if (!flags.force) {
+      const count = worktrees.length;
       spinner.info(
-        `Found ${chalk.bold(worktrees.length)} worktree ${worktrees.length === 1 ? "branch that is" : "branches that are"} marked safe to remove.`,
+        `Found ${chalk.bold(count)} worktree ${count === 1 ? "branch that is" : "branches that are"} marked safe to remove.`,
       );
-      const message = "Are you sure you want to delete them?";
+      worktrees.forEach((wt) => {
+        this.log(`- ${worktreeListEntryToListName(wt, "gray")}`);
+      });
+      const message = `Are you sure you want to delete ${count === 1 ? "it" : "them"}?`;
       if (!(await confirm({ message, default: false }))) {
         return;
       }

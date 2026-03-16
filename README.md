@@ -226,4 +226,3 @@ MIT
 - [x] Add `cleanup` command to cleanup stale worktrees
 - [ ] Integrate with JIRA for automated branch naming
 - [ ] Integrate with ClickUp for automated branch naming
-- [ ] Integrate with Trello for automated branch naming
