@@ -4,7 +4,6 @@ import {
   projectName,
   projectOwnerAvatarUrl,
   projectOwnerName,
-  projectOwnerProfileUrl,
 } from "../lib/site-meta";
 import { ProfileAvatarLink } from "./ProfileAvatarLink";
 
@@ -22,7 +21,7 @@ export function Navbar() {
           }}
         >
           <ProfileAvatarLink
-            href={projectOwnerProfileUrl}
+            href="/"
             name={projectOwnerName}
             avatarUrl={projectOwnerAvatarUrl}
             style={{ gap: 0 }}

@@ -1,0 +1,53 @@
+---
+title: GitHub Issue Integration
+---
+
+# GitHub Issue Integration
+
+`worktree` can derive branch names directly from GitHub issues in the current repository.
+
+## Basic Usage
+
+```bash
+worktree branch --github 42
+worktree branch --github "#42"
+```
+
+The generated branch name is shown as the default in the prompt, so you can accept it or edit it before creation.
+
+## How Branch Names Are Built
+
+1. Read issue number and title from the GitHub API.
+2. Sanitize the title into a branch-safe slug.
+3. Optionally prepend a configured prefix based on issue type.
+
+Supported issue-type prefix mapping:
+
+- `Feature` -> `branchPrefix.feature`
+- `Bug` -> `branchPrefix.bugfix`
+- `Task` -> `branchPrefix.chore`
+
+If a prefix key is not configured, no prefix is applied.
+
+## Authentication Resolution
+
+Authentication is resolved in this order:
+
+1. Existing `github.token` in local git config.
+2. `gh auth token` from GitHub CLI.
+3. Interactive prompt for a token, then save to local git config.
+
+## Suggested Setup
+
+```bash
+worktree config github.token <token>
+worktree config branchPrefix.feature feature/
+worktree config branchPrefix.bugfix fix/
+worktree config branchPrefix.chore chore/
+```
+
+You can also configure only missing values:
+
+```bash
+worktree config --missing --names github.token,branchPrefix.feature,branchPrefix.bugfix,branchPrefix.chore
+```

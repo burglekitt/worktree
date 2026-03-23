@@ -36,7 +36,7 @@ describe("Navbar", () => {
     );
     expect(screen.getByRole("link", { name: "burglekitt" })).toHaveAttribute(
       "href",
-      "https://github.com/burglekitt",
+      "/",
     );
   });
 });

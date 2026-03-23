@@ -14,12 +14,16 @@ worktree config <key> <value>
 worktree config --list
 worktree config --list --missing
 worktree config --missing
+worktree config --missing --names <comma-separated-keys>
+worktree config --yes
 ```
 
 `--missing` filters to values that are not configured yet.
 
 - With `--list`, it only prints config names that currently have no value.
 - Without `--list`, it only prompts for missing values.
+- `--names` limits prompting to specific config keys.
+- `--yes` accepts optional confirmations automatically.
 
 ## Examples
 
@@ -29,6 +33,15 @@ worktree config codeEditor code
 worktree config --list
 worktree config --list --missing
 worktree config --missing
+worktree config --missing --names defaultSourceBranch
+worktree config --missing --yes --names branchPrefix.feature,branchPrefix.bugfix,branchPrefix.chore
 ```
 
 Configuration is stored in local Git config under `burglekitt.worktree.*`.
+
+## GitHub Integration Keys
+
+- `github.token` for GitHub API access.
+- `branchPrefix.feature` optional prefix used for `Feature` issues.
+- `branchPrefix.bugfix` optional prefix used for `Bug` issues.
+- `branchPrefix.chore` optional prefix used for `Task` issues.
