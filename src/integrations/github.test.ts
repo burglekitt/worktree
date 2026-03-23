@@ -1,6 +1,77 @@
 import * as cli from "../lib/cli.js";
 import { expectCommands } from "../test-setup.js";
-import { fetchGitHubIssue, parseGitHubRepositoryFromRemote } from "./github.js";
+import {
+  fetchGitHubIssue,
+  type GitHubIssueApiResponse,
+  type GitHubIssueTypeApiResponse,
+  parseGitHubRepositoryFromRemote,
+} from "./github.js";
+
+type MockIssueOverrides = Partial<
+  Omit<GitHubIssueApiResponse, "type" | "user">
+> & {
+  type?: GitHubIssueTypeApiResponse | null;
+  user?: Partial<GitHubIssueApiResponse["user"]>;
+};
+
+function makeIssueApiResponse(
+  overrides: MockIssueOverrides = {},
+): GitHubIssueApiResponse {
+  const {
+    type: overrideType,
+    user: overrideUser,
+    ...restOverrides
+  } = overrides;
+  const number = overrides.number ?? 42;
+  const defaultType: GitHubIssueTypeApiResponse = {
+    id: 1,
+    node_id: "IT_kwDOD8WxkM4AAAAA",
+    name: "Feature",
+    description: "A request, idea, or new functionality",
+    color: "blue",
+    created_at: "2026-02-28T11:23:18Z",
+    updated_at: "2026-02-28T11:23:18Z",
+    is_enabled: true,
+  };
+  const defaultUser = {
+    login: "baldurpan",
+    html_url: "https://github.com/baldurpan",
+  };
+
+  return {
+    url: `https://api.github.com/repos/burglekitt/worktree/issues/${number}`,
+    repository_url: "https://api.github.com/repos/burglekitt/worktree",
+    labels_url: `https://api.github.com/repos/burglekitt/worktree/issues/${number}/labels{/name}`,
+    comments_url: `https://api.github.com/repos/burglekitt/worktree/issues/${number}/comments`,
+    events_url: `https://api.github.com/repos/burglekitt/worktree/issues/${number}/events`,
+    id: 101,
+    node_id: "I_kwDORiPVEM4AAAAA",
+    number,
+    title: "Support GitHub issue integration",
+    body: "Add issue lookup",
+    state: "open",
+    state_reason: null,
+    comments: 0,
+    created_at: "2026-03-22T12:00:00Z",
+    updated_at: "2026-03-22T12:00:00Z",
+    closed_at: null,
+    author_association: "CONTRIBUTOR",
+    html_url: `https://github.com/burglekitt/worktree/issues/${number}`,
+    ...restOverrides,
+    type: overrideType === undefined ? defaultType : overrideType,
+    user: {
+      ...defaultUser,
+      ...overrideUser,
+    },
+  };
+}
+
+function makeOkJsonResponse<T>(payload: T) {
+  return {
+    ok: true,
+    json: vi.fn().mockResolvedValue(payload),
+  };
+}
 
 describe("GitHub integration", () => {
   beforeEach(() => {
@@ -43,46 +114,9 @@ describe("GitHub integration", () => {
     );
     vi.spyOn(cli, "cmd").mockResolvedValueOnce("");
 
-    const fetchSpy = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        url: "https://api.github.com/repos/burglekitt/worktree/issues/42",
-        repository_url: "https://api.github.com/repos/burglekitt/worktree",
-        labels_url:
-          "https://api.github.com/repos/burglekitt/worktree/issues/42/labels{/name}",
-        comments_url:
-          "https://api.github.com/repos/burglekitt/worktree/issues/42/comments",
-        events_url:
-          "https://api.github.com/repos/burglekitt/worktree/issues/42/events",
-        id: 101,
-        node_id: "I_kwDORiPVEM4AAAAA",
-        number: 42,
-        title: "Support GitHub issue integration",
-        body: "Add issue lookup",
-        state: "open",
-        state_reason: null,
-        comments: 0,
-        created_at: "2026-03-22T12:00:00Z",
-        updated_at: "2026-03-22T12:00:00Z",
-        closed_at: null,
-        author_association: "CONTRIBUTOR",
-        type: {
-          id: 1,
-          node_id: "IT_kwDOD8WxkM4AAAAA",
-          name: "Feature",
-          description: "A request, idea, or new functionality",
-          color: "blue",
-          created_at: "2026-02-28T11:23:18Z",
-          updated_at: "2026-02-28T11:23:18Z",
-          is_enabled: true,
-        },
-        html_url: "https://github.com/burglekitt/worktree/issues/42",
-        user: {
-          login: "baldurpan",
-          html_url: "https://github.com/baldurpan",
-        },
-      }),
-    });
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValue(makeOkJsonResponse(makeIssueApiResponse()));
     vi.stubGlobal("fetch", fetchSpy);
 
     const issue = await fetchGitHubIssue(42);
@@ -180,34 +214,18 @@ describe("GitHub integration", () => {
       statusText: "Not Found",
       text: vi.fn().mockResolvedValue(""),
     }); // repo check fails
-    fetchSpy.mockResolvedValueOnce({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        url: "https://api.github.com/repos/burglekitt/worktree/issues/13",
-        repository_url: "https://api.github.com/repos/burglekitt/worktree",
-        labels_url:
-          "https://api.github.com/repos/burglekitt/worktree/issues/13/labels{/name}",
-        comments_url:
-          "https://api.github.com/repos/burglekitt/worktree/issues/13/comments",
-        events_url:
-          "https://api.github.com/repos/burglekitt/worktree/issues/13/events",
-        id: 201,
-        node_id: "I_kwDORiPVEM4BBBBB",
-        number: 13,
-        title: "Private issue",
-        body: null,
-        state: "open",
-        state_reason: null,
-        comments: 0,
-        created_at: "2026-03-22T12:00:00Z",
-        updated_at: "2026-03-22T12:00:00Z",
-        closed_at: null,
-        author_association: "CONTRIBUTOR",
-        type: null,
-        html_url: "https://github.com/burglekitt/worktree/issues/13",
-        user: { login: "baldurpan", html_url: "https://github.com/baldurpan" },
-      }),
-    }); // issue fetch succeeds with token
+    fetchSpy.mockResolvedValueOnce(
+      makeOkJsonResponse(
+        makeIssueApiResponse({
+          id: 201,
+          node_id: "I_kwDORiPVEM4BBBBB",
+          number: 13,
+          title: "Private issue",
+          body: null,
+          type: null,
+        }),
+      ),
+    ); // issue fetch succeeds with token
     vi.stubGlobal("fetch", fetchSpy);
 
     expectCommands(

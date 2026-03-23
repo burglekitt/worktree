@@ -7,7 +7,7 @@ interface GitHubRepository {
   name: string;
 }
 
-interface GitHubIssueTypeApiResponse {
+export interface GitHubIssueTypeApiResponse {
   id: number;
   node_id: string;
   name: string;
@@ -64,7 +64,7 @@ export interface GitHubRepositoryInfo {
   description: string | null;
 }
 
-interface GitHubIssueApiResponse {
+export interface GitHubIssueApiResponse {
   url: string;
   repository_url: string;
   labels_url: string;
