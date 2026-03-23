@@ -133,28 +133,11 @@ export default class Branch extends BaseCommand {
     });
   }
 
-  private getConfigNamesToVerify(flags: {
-    github?: string;
-    source?: string;
-  }): ConfigName[] {
-    const configNames: ConfigName[] = [];
-
-    if (!flags.source) {
-      configNames.push("defaultSourceBranch");
-    }
-    if (flags.github) {
-      configNames.push(
-        "branchPrefix.feature",
-        "branchPrefix.bugfix",
-        "branchPrefix.chore",
-      );
-    }
-    return configNames;
-  }
-
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Branch);
-    const configNames = this.getConfigNamesToVerify(flags);
+    const configNames: ConfigName[] = !flags.source
+      ? ["defaultSourceBranch"]
+      : [];
 
     // If there is no source flag provided, make sure defaultSourceBranch is configured
     await this.verifyConfig(configNames);

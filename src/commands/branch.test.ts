@@ -209,7 +209,7 @@ describe("branch command", () => {
 
       await branch.run();
 
-      expect(mockConfirm).toHaveBeenNthCalledWith(2, {
+      expect(mockConfirm).toHaveBeenCalledWith({
         message:
           "A remote branch with the same name exists. Do you want to use the remote branch instead?",
       });

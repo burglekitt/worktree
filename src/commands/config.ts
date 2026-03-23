@@ -77,11 +77,11 @@ export default class Config extends BaseCommand {
     missing: boolean;
     yes: boolean;
     names?: string;
-  }) {
+  }): Promise<ConfigName[]> {
     const applicableConfigNames = this.getApplicableConfigNames(flags.names);
 
     if (flags.missing) {
-      const configNames: string[] = [];
+      const configNames: ConfigName[] = [];
       for (const name of applicableConfigNames) {
         if (!(await gitGetConfigValue(name))) {
           configNames.push(name);
