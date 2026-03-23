@@ -29,9 +29,17 @@ export default class Config extends BaseCommand {
       char: "l",
       description: "List all available variables",
     }),
+    yes: Flags.boolean({
+      char: "y",
+      description: "Answer yes to all prompts",
+    }),
     missing: Flags.boolean({
       char: "m",
       description: "Only prompt missing variables",
+    }),
+    names: Flags.string({
+      char: "n",
+      description: "Comma-separated list of variable names to prompt",
     }),
   };
 
@@ -54,10 +62,27 @@ export default class Config extends BaseCommand {
     }
   }
 
-  private async getPromptConfigNames(missing: boolean) {
-    if (missing) {
-      const configNames: string[] = [];
-      for (const name of CONFIG_NAMES) {
+  private getApplicableConfigNames(names?: string): ConfigName[] {
+    if (names) {
+      return names
+        .split(",")
+        .filter((name) => CONFIG_NAMES.includes(name.trim() as ConfigName))
+        .map((name) => name.trim() as ConfigName);
+    }
+
+    return [...CONFIG_NAMES];
+  }
+
+  private async getPromptConfigNames(flags: {
+    missing: boolean;
+    yes: boolean;
+    names?: string;
+  }): Promise<ConfigName[]> {
+    const applicableConfigNames = this.getApplicableConfigNames(flags.names);
+
+    if (flags.missing) {
+      const configNames: ConfigName[] = [];
+      for (const name of applicableConfigNames) {
         if (!(await gitGetConfigValue(name))) {
           configNames.push(name);
         }
@@ -65,13 +90,35 @@ export default class Config extends BaseCommand {
       return configNames;
     }
 
-    return [...CONFIG_NAMES];
+    return applicableConfigNames;
   }
 
-  private async renderInput(missing: boolean) {
-    const configNames = await this.getPromptConfigNames(missing);
+  private maybePrompt(message: string, alwaysYes = false) {
+    if (alwaysYes) {
+      return true;
+    }
+    return confirm({ message });
+  }
+
+  private async getInputConfig(name: ConfigName, fallback: string = "") {
+    const value = await gitGetConfigValue(name);
+    return {
+      default: value || fallback,
+      prefill: value ? "editable" : "tab",
+    } as const;
+  }
+
+  private async renderInput(flags: {
+    missing: boolean;
+    yes: boolean;
+    names?: string;
+  }) {
+    const configNames = await this.getPromptConfigNames(flags);
     const hasJiraPrompt =
-      JIRA_ENABLED && !!configNames.find((name) => name.startsWith("jira"));
+      JIRA_ENABLED && configNames.some((name) => name.startsWith("jira"));
+    const hasBranchPrefixPrompt = configNames.some((name) =>
+      name.startsWith("branchPrefix"),
+    );
 
     // First check if there is anything to prompt
     if (configNames.length === 0) {
@@ -85,7 +132,10 @@ export default class Config extends BaseCommand {
 
     if (
       hasJiraPrompt &&
-      (await confirm({ message: "Do you want to configure Jira integration?" }))
+      (await this.maybePrompt(
+        "Do you want to configure Jira integration?",
+        flags.yes,
+      ))
     ) {
       if (shouldPrompt("jira.domain")) {
         const jiraDomain = await input({
@@ -97,6 +147,7 @@ export default class Config extends BaseCommand {
       if (shouldPrompt("jira.email")) {
         const jiraEmail = await input({
           message: "Jira email",
+          ...(await this.getInputConfig("jira.email")),
           validate: isValidEmail,
         });
         await gitSetConfigValue("jira.email", jiraEmail);
@@ -106,22 +157,54 @@ export default class Config extends BaseCommand {
     if (shouldPrompt("defaultSourceBranch")) {
       const defaultBranchName = await input({
         message: "Which branch should new worktrees be based on?",
-        default: "origin/main",
+        ...(await this.getInputConfig("defaultSourceBranch", "origin/main")),
         validate: isValidBranch,
       });
       await gitSetConfigValue("defaultSourceBranch", defaultBranchName);
     }
 
     if (
+      hasBranchPrefixPrompt &&
+      (await this.maybePrompt(
+        "Do you want to configure branch name prefixes?",
+        flags.yes,
+      ))
+    ) {
+      if (shouldPrompt("branchPrefix.feature")) {
+        const featurePrefix = await input({
+          message: "Prefix for feature branches",
+          ...(await this.getInputConfig("branchPrefix.feature", "feature/")),
+        });
+        await gitSetConfigValue("branchPrefix.feature", featurePrefix);
+      }
+
+      if (shouldPrompt("branchPrefix.bugfix")) {
+        const bugfixPrefix = await input({
+          message: "Prefix for bugfix branches",
+          ...(await this.getInputConfig("branchPrefix.bugfix", "fix/")),
+        });
+        await gitSetConfigValue("branchPrefix.bugfix", bugfixPrefix);
+      }
+
+      if (shouldPrompt("branchPrefix.chore")) {
+        const chorePrefix = await input({
+          message: "Prefix for chore branches",
+          ...(await this.getInputConfig("branchPrefix.chore", "chore/")),
+        });
+        await gitSetConfigValue("branchPrefix.chore", chorePrefix);
+      }
+    }
+
+    if (
       shouldPrompt("codeEditor") &&
-      (await confirm({
-        message:
-          "Do you want to automatically open the worktree in a code editor?",
-      }))
+      (await this.maybePrompt(
+        "Do you want to automatically open the worktree in a code editor?",
+        flags.yes,
+      ))
     ) {
       const codeEditor = await input({
         message: "Command to open code editor?",
-        default: "code",
+        ...(await this.getInputConfig("codeEditor", "code")),
         validate: isValidCommand,
       });
       await gitSetConfigValue("codeEditor", codeEditor);
@@ -163,6 +246,6 @@ export default class Config extends BaseCommand {
       return this.renderList(flags.missing);
     }
 
-    return this.renderInput(flags.missing);
+    return this.renderInput(flags);
   }
 }

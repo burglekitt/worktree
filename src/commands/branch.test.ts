@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: Allow any in tests */
 import { confirm, input } from "@inquirer/prompts";
+import * as githubIntegration from "../integrations/github.js";
 import { copyEnvFilesFromRootPath } from "../lib/env.js";
 import * as git from "../lib/git.js";
 import * as validators from "../lib/validators.js";
@@ -83,6 +84,8 @@ describe("branch command", () => {
 
       expect(mockInput).toHaveBeenCalledWith({
         message: "Branch name",
+        default: "",
+        prefill: "editable",
         validate: validators.isValidBranchName,
       });
       expect(mockGitCreateWorktree).toHaveBeenCalledWith(
@@ -206,7 +209,7 @@ describe("branch command", () => {
 
       await branch.run();
 
-      expect(mockConfirm).toHaveBeenNthCalledWith(2, {
+      expect(mockConfirm).toHaveBeenCalledWith({
         message:
           "A remote branch with the same name exists. Do you want to use the remote branch instead?",
       });
@@ -283,6 +286,217 @@ describe("branch command", () => {
       expect(mockGitCreateWorktree).toHaveBeenCalledWith(
         "feature/test",
         "origin/main",
+      );
+    });
+  });
+
+  describe("--github flag", () => {
+    it("should pre-fill input with branch name derived from github issue", async () => {
+      vi.spyOn(githubIntegration, "fetchGitHubIssue").mockResolvedValue({
+        number: 42,
+        title: "Add dark mode",
+        type: { name: "Feature" },
+      } as any);
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/main");
+        if (key === "branchPrefix.feature") return Promise.resolve("feature/");
+        if (key === "branchPrefix.bugfix") return Promise.resolve("fix/");
+        if (key === "branchPrefix.chore") return Promise.resolve("chore/");
+        return Promise.resolve("");
+      });
+      mockInput.mockResolvedValue("feature/42-add-dark-mode");
+      const mockGitCreateWorktree = vi
+        .spyOn(git, "gitCreateWorktree")
+        .mockResolvedValue("/path/to/worktree");
+
+      (branch as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { github: "42" },
+      });
+
+      await branch.run();
+
+      expect(githubIntegration.fetchGitHubIssue).toHaveBeenCalledWith(42);
+      expect(mockInput).toHaveBeenCalledWith({
+        message: "Branch name",
+        default: "feature/42-add-dark-mode",
+        prefill: "editable",
+        validate: validators.isValidBranchName,
+      });
+      expect(mockGitCreateWorktree).toHaveBeenCalledWith(
+        "feature/42-add-dark-mode",
+        "origin/main",
+      );
+    });
+
+    it("should strip # prefix from issue number flag", async () => {
+      const mockFetchGitHubIssue = vi
+        .spyOn(githubIntegration, "fetchGitHubIssue")
+        .mockResolvedValue({
+          number: 13,
+          title: "Fix login bug",
+          type: { name: "Bug" },
+        } as any);
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/main");
+        if (key === "branchPrefix.bugfix") return Promise.resolve("fix/");
+        return Promise.resolve("");
+      });
+      mockInput.mockResolvedValue("fix/13-fix-login-bug");
+      vi.spyOn(git, "gitCreateWorktree").mockResolvedValue("/path/to/worktree");
+
+      (branch as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { github: "#13" },
+      });
+
+      await branch.run();
+
+      expect(mockFetchGitHubIssue).toHaveBeenCalledWith(13);
+    });
+
+    it("should apply bugfix prefix for Bug issue type", async () => {
+      vi.spyOn(githubIntegration, "fetchGitHubIssue").mockResolvedValue({
+        number: 8,
+        title: "Fix memory leak",
+        type: { name: "Bug" },
+      } as any);
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/main");
+        if (key === "branchPrefix.feature") return Promise.resolve("feature/");
+        if (key === "branchPrefix.bugfix") return Promise.resolve("fix/");
+        if (key === "branchPrefix.chore") return Promise.resolve("chore/");
+        return Promise.resolve("");
+      });
+      mockInput.mockResolvedValue("fix/8-fix-memory-leak");
+      vi.spyOn(git, "gitCreateWorktree").mockResolvedValue("/path/to/worktree");
+
+      (branch as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { github: "8" },
+      });
+
+      await branch.run();
+
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({ default: "fix/8-fix-memory-leak" }),
+      );
+    });
+
+    it("should apply chore prefix for Task issue type", async () => {
+      vi.spyOn(githubIntegration, "fetchGitHubIssue").mockResolvedValue({
+        number: 9,
+        title: "Update CI config",
+        type: { name: "Task" },
+      } as any);
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/main");
+        if (key === "branchPrefix.feature") return Promise.resolve("feature/");
+        if (key === "branchPrefix.bugfix") return Promise.resolve("fix/");
+        if (key === "branchPrefix.chore") return Promise.resolve("chore/");
+        return Promise.resolve("");
+      });
+      mockInput.mockResolvedValue("chore/9-update-ci-config");
+      vi.spyOn(git, "gitCreateWorktree").mockResolvedValue("/path/to/worktree");
+
+      (branch as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { github: "9" },
+      });
+
+      await branch.run();
+
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({ default: "chore/9-update-ci-config" }),
+      );
+    });
+
+    it("should use no prefix when issue has no type", async () => {
+      vi.spyOn(githubIntegration, "fetchGitHubIssue").mockResolvedValue({
+        number: 7,
+        title: "Update dependencies",
+        type: null,
+      } as any);
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/main");
+        return Promise.resolve("");
+      });
+      mockInput.mockResolvedValue("7-update-dependencies");
+      vi.spyOn(git, "gitCreateWorktree").mockResolvedValue("/path/to/worktree");
+
+      (branch as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { github: "7" },
+      });
+
+      await branch.run();
+
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({ default: "7-update-dependencies" }),
+      );
+    });
+
+    it("should sanitize special characters in the issue title", async () => {
+      vi.spyOn(githubIntegration, "fetchGitHubIssue").mockResolvedValue({
+        number: 5,
+        title: "Fix: user's email (login)",
+        type: null,
+      } as any);
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/main");
+        return Promise.resolve("");
+      });
+      mockInput.mockResolvedValue("5-fix-users-email-login");
+      vi.spyOn(git, "gitCreateWorktree").mockResolvedValue("/path/to/worktree");
+
+      (branch as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { github: "5" },
+      });
+
+      await branch.run();
+
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({ default: "5-fix-users-email-login" }),
+      );
+    });
+
+    it("should fall back to 'issue' when the sanitized title is empty", async () => {
+      vi.spyOn(githubIntegration, "fetchGitHubIssue").mockResolvedValue({
+        number: 3,
+        title: "!!!",
+        type: null,
+      } as any);
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/main");
+        return Promise.resolve("");
+      });
+      mockInput.mockResolvedValue("3-issue");
+      vi.spyOn(git, "gitCreateWorktree").mockResolvedValue("/path/to/worktree");
+
+      (branch as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { github: "3" },
+      });
+
+      await branch.run();
+
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({ default: "3-issue" }),
       );
     });
   });

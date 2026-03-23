@@ -10,15 +10,29 @@ title: Configuration
 
 - `defaultSourceBranch` (example: `origin/main`)
 - `codeEditor` (example: `code`)
+- `github.token` (GitHub personal access token)
+- `branchPrefix.feature` (example: `feature/`)
+- `branchPrefix.bugfix` (example: `fix/`)
+- `branchPrefix.chore` (example: `chore/`)
 
 ## Commands
 
 ```bash
 worktree config --list
 worktree config --missing
+worktree config --missing --names defaultSourceBranch,github.token
 worktree config defaultSourceBranch origin/main
 worktree config codeEditor code
+worktree config branchPrefix.feature feature/
+worktree config branchPrefix.bugfix fix/
+worktree config branchPrefix.chore chore/
 ```
+
+## GitHub Integration Notes
+
+- `worktree branch --github <issue-number>` reads issues from the current repository remote.
+- Branch prefix keys are optional. If missing, `worktree` uses no prefix.
+- If `github.token` is missing, `worktree` can attempt to use `gh auth token` and then prompt.
 
 ## Recommended Team Baseline
 

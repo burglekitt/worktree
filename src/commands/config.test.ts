@@ -1,11 +1,19 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: Allow any in tests */
+import { confirm, input } from "@inquirer/prompts";
 import * as git from "../lib/git.js";
 import * as validators from "../lib/validators.js";
 import Config from "./config.js";
 
+vi.mock("@inquirer/prompts", () => ({
+  confirm: vi.fn(),
+  input: vi.fn(),
+}));
+
 describe("config command", () => {
   let config: Config;
   let mockConsoleLog: ReturnType<typeof vi.spyOn>;
+  const mockInput = vi.mocked(input);
+  const mockConfirm = vi.mocked(confirm);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -162,6 +170,197 @@ describe("config command", () => {
       });
 
       await expect(config.run()).rejects.toThrow("Invalid email address");
+    });
+  });
+
+  describe("--names flag", () => {
+    it("should only prompt for the specified config name", async () => {
+      mockInput.mockResolvedValue("origin/main");
+
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: {
+          list: false,
+          missing: false,
+          yes: false,
+          names: "defaultSourceBranch",
+        },
+      });
+
+      await config.run();
+
+      expect(mockInput).toHaveBeenCalledTimes(1);
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Which branch should new worktrees be based on?",
+        }),
+      );
+    });
+
+    it("should silently ignore unknown config names", async () => {
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: {
+          list: false,
+          missing: false,
+          yes: false,
+          names: "unknown.setting",
+        },
+      });
+
+      await config.run();
+
+      expect(mockInput).not.toHaveBeenCalled();
+      expect(mockConsoleLog).toHaveBeenCalledWith("No missing config found.");
+    });
+  });
+
+  describe("branch prefix prompts", () => {
+    it("should prompt for all branch prefix variables when user confirms", async () => {
+      mockConfirm.mockResolvedValue(true);
+      mockInput
+        .mockResolvedValueOnce("feature/")
+        .mockResolvedValueOnce("fix/")
+        .mockResolvedValueOnce("chore/");
+      const mockSetConfigValue = vi
+        .spyOn(git, "gitSetConfigValue")
+        .mockResolvedValue();
+
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: {
+          list: false,
+          missing: false,
+          yes: false,
+          names: "branchPrefix.feature,branchPrefix.bugfix,branchPrefix.chore",
+        },
+      });
+
+      await config.run();
+
+      expect(mockConfirm).toHaveBeenCalledWith({
+        message: "Do you want to configure branch name prefixes?",
+      });
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({ message: "Prefix for feature branches" }),
+      );
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({ message: "Prefix for bugfix branches" }),
+      );
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({ message: "Prefix for chore branches" }),
+      );
+      expect(mockSetConfigValue).toHaveBeenCalledWith(
+        "branchPrefix.feature",
+        "feature/",
+      );
+      expect(mockSetConfigValue).toHaveBeenCalledWith(
+        "branchPrefix.bugfix",
+        "fix/",
+      );
+      expect(mockSetConfigValue).toHaveBeenCalledWith(
+        "branchPrefix.chore",
+        "chore/",
+      );
+    });
+
+    it("should skip branch prefix prompts when user declines", async () => {
+      mockConfirm.mockResolvedValue(false);
+
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: {
+          list: false,
+          missing: false,
+          yes: false,
+          names: "branchPrefix.feature,branchPrefix.bugfix,branchPrefix.chore",
+        },
+      });
+
+      await config.run();
+
+      expect(mockConfirm).toHaveBeenCalledWith({
+        message: "Do you want to configure branch name prefixes?",
+      });
+      expect(mockInput).not.toHaveBeenCalled();
+    });
+
+    it("should skip the confirmation prompt when --yes is set", async () => {
+      mockInput
+        .mockResolvedValueOnce("feature/")
+        .mockResolvedValueOnce("fix/")
+        .mockResolvedValueOnce("chore/");
+
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: {
+          list: false,
+          missing: false,
+          yes: true,
+          names: "branchPrefix.feature,branchPrefix.bugfix,branchPrefix.chore",
+        },
+      });
+
+      await config.run();
+
+      expect(mockConfirm).not.toHaveBeenCalled();
+      expect(mockInput).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe("defaultSourceBranch prompt pre-fill", () => {
+    it("should pre-fill with the existing value when one is configured", async () => {
+      mockInput.mockResolvedValue("origin/develop");
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/develop");
+        return Promise.resolve("");
+      });
+
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: {
+          list: false,
+          missing: false,
+          yes: false,
+          names: "defaultSourceBranch",
+        },
+      });
+
+      await config.run();
+
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Which branch should new worktrees be based on?",
+          default: "origin/develop",
+          prefill: "editable",
+        }),
+      );
+    });
+
+    it("should fall back to 'origin/main' with tab prefill when no value is configured", async () => {
+      mockInput.mockResolvedValue("origin/main");
+
+      (config as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: {
+          list: false,
+          missing: false,
+          yes: false,
+          names: "defaultSourceBranch",
+        },
+      });
+
+      await config.run();
+
+      expect(mockInput).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Which branch should new worktrees be based on?",
+          default: "origin/main",
+          prefill: "tab",
+        }),
+      );
     });
   });
 });

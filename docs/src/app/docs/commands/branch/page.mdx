@@ -11,6 +11,7 @@ Create a new branch in a dedicated worktree.
 ```bash
 worktree branch <name>
 worktree branch <name> --source <remote-branch>
+worktree branch --github <issue-number>
 ```
 
 ## Examples
@@ -18,7 +19,28 @@ worktree branch <name> --source <remote-branch>
 ```bash
 worktree branch feature/add-bulk-actions
 worktree branch feature/add-bulk-actions --source origin/release/1.4
+worktree branch --github 42
+worktree branch --github "#42"
 ```
+
+## GitHub Issue Branching
+
+Use the `--github` flag to create a suggested branch name from an issue in the current repository.
+
+- The issue number can be passed as `42` or `"#42"`.
+- The generated name is pre-filled in the prompt and still editable.
+- If issue types are configured in the repository, these optional prefixes are applied:
+	- `branchPrefix.feature` for issue type `Feature`
+	- `branchPrefix.bugfix` for issue type `Bug`
+	- `branchPrefix.chore` for issue type `Task`
+
+If no prefix is configured, `worktree` falls back to an empty prefix and still generates a valid branch name.
+
+GitHub authentication is resolved in this order:
+
+1. `burglekitt.worktree.github.token` from local git config.
+2. `gh auth token` if GitHub CLI is installed and authenticated.
+3. Interactive token prompt, which is then saved in local git config.
 
 ## What It Does
 

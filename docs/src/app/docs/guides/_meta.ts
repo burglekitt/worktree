@@ -1,6 +1,7 @@
 import type { MetaRecord } from "nextra";
 
 const meta: MetaRecord = {
+  "github-issue-integration": "GitHub Issue Integration",
   "context-switching": "Context Switching",
   "team-conventions": "Team Conventions",
   "env-files": "Environment Files",
