@@ -118,13 +118,18 @@ export default class Branch extends BaseCommand {
     branchNameArg?: string,
     flags?: { github?: string },
   ) {
-    let defaultValue = "";
-
-    if (flags?.github) {
-      defaultValue = await this.getGithubIssueBranchName(flags.github);
-    } else if (branchNameArg && this.validateBranchName(branchNameArg)) {
+    if (
+      !flags?.github &&
+      branchNameArg &&
+      this.validateBranchName(branchNameArg)
+    ) {
       return branchNameArg;
     }
+
+    const defaultValue = flags?.github
+      ? await this.getGithubIssueBranchName(flags.github)
+      : "";
+
     return await input({
       message: "Branch name",
       default: defaultValue,
