@@ -1,0 +1,231 @@
+import * as cli from "../lib/cli.js";
+import { expectCommands } from "../test-setup.js";
+import { fetchGitHubIssue, parseGitHubRepositoryFromRemote } from "./github.js";
+
+describe("GitHub integration", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.unstubAllGlobals();
+    expectCommands(
+      "git remote get-url origin",
+      "git config burglekitt.worktree.github.token",
+    );
+  });
+
+  it.each([
+    {
+      remoteUrl: "git@github.com:burglekitt/worktree.git",
+      expected: { owner: "burglekitt", name: "worktree" },
+    },
+    {
+      remoteUrl: "https://github.com/burglekitt/worktree.git",
+      expected: { owner: "burglekitt", name: "worktree" },
+    },
+    {
+      remoteUrl: "https://github.com/burglekitt/worktree",
+      expected: { owner: "burglekitt", name: "worktree" },
+    },
+  ])("parses GitHub remote url $remoteUrl", ({ remoteUrl, expected }) => {
+    expect(parseGitHubRepositoryFromRemote(remoteUrl)).toEqual(expected);
+  });
+
+  it("throws when the origin remote is not a GitHub repository", () => {
+    expect(() =>
+      parseGitHubRepositoryFromRemote("git@gitlab.com:burglekitt/worktree.git"),
+    ).toThrow(
+      'GitHub: Unable to determine the current repository from origin remote "git@gitlab.com:burglekitt/worktree.git".',
+    );
+  });
+
+  it("fetches issue info from the current repository", async () => {
+    vi.spyOn(cli, "cmd").mockResolvedValueOnce(
+      "git@github.com:burglekitt/worktree.git",
+    );
+    vi.spyOn(cli, "cmd").mockResolvedValueOnce("");
+
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        url: "https://api.github.com/repos/burglekitt/worktree/issues/42",
+        repository_url: "https://api.github.com/repos/burglekitt/worktree",
+        labels_url:
+          "https://api.github.com/repos/burglekitt/worktree/issues/42/labels{/name}",
+        comments_url:
+          "https://api.github.com/repos/burglekitt/worktree/issues/42/comments",
+        events_url:
+          "https://api.github.com/repos/burglekitt/worktree/issues/42/events",
+        id: 101,
+        node_id: "I_kwDORiPVEM4AAAAA",
+        number: 42,
+        title: "Support GitHub issue integration",
+        body: "Add issue lookup",
+        state: "open",
+        state_reason: null,
+        comments: 0,
+        created_at: "2026-03-22T12:00:00Z",
+        updated_at: "2026-03-22T12:00:00Z",
+        closed_at: null,
+        author_association: "CONTRIBUTOR",
+        type: {
+          id: 1,
+          node_id: "IT_kwDOD8WxkM4AAAAA",
+          name: "Feature",
+          description: "A request, idea, or new functionality",
+          color: "blue",
+          created_at: "2026-02-28T11:23:18Z",
+          updated_at: "2026-02-28T11:23:18Z",
+          is_enabled: true,
+        },
+        html_url: "https://github.com/burglekitt/worktree/issues/42",
+        user: {
+          login: "baldurpan",
+          html_url: "https://github.com/baldurpan",
+        },
+      }),
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const issue = await fetchGitHubIssue(42);
+
+    expect(cli.cmd).toHaveBeenCalledWith("git remote get-url origin");
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "https://api.github.com/repos/burglekitt/worktree/issues/42",
+      {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "User-Agent": "@burglekitt/worktree",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      },
+    );
+    expect(issue).toEqual({
+      url: "https://api.github.com/repos/burglekitt/worktree/issues/42",
+      repositoryUrl: "https://api.github.com/repos/burglekitt/worktree",
+      labelsUrl:
+        "https://api.github.com/repos/burglekitt/worktree/issues/42/labels{/name}",
+      commentsUrl:
+        "https://api.github.com/repos/burglekitt/worktree/issues/42/comments",
+      eventsUrl:
+        "https://api.github.com/repos/burglekitt/worktree/issues/42/events",
+      id: 101,
+      nodeId: "I_kwDORiPVEM4AAAAA",
+      number: 42,
+      title: "Support GitHub issue integration",
+      body: "Add issue lookup",
+      state: "open",
+      stateReason: null,
+      comments: 0,
+      createdAt: "2026-03-22T12:00:00Z",
+      updatedAt: "2026-03-22T12:00:00Z",
+      closedAt: null,
+      authorAssociation: "CONTRIBUTOR",
+      htmlUrl: "https://github.com/burglekitt/worktree/issues/42",
+      type: {
+        id: 1,
+        nodeId: "IT_kwDOD8WxkM4AAAAA",
+        name: "Feature",
+        description: "A request, idea, or new functionality",
+        color: "blue",
+        createdAt: "2026-02-28T11:23:18Z",
+        updatedAt: "2026-02-28T11:23:18Z",
+        isEnabled: true,
+      },
+      user: {
+        login: "baldurpan",
+        htmlUrl: "https://github.com/baldurpan",
+      },
+    });
+  });
+
+  it("throws for invalid issue ids", async () => {
+    await expect(fetchGitHubIssue("abc")).rejects.toThrow(
+      'GitHub: Invalid issue id "abc".',
+    );
+  });
+
+  it("throws when the GitHub API responds with an error", async () => {
+    // Use a pre-configured token so the repo-check step is skipped, and the
+    // error comes directly from the issue fetch.
+    vi.spyOn(cli, "cmd").mockResolvedValueOnce(
+      "git@github.com:burglekitt/worktree.git",
+    );
+    vi.spyOn(cli, "cmd").mockResolvedValueOnce("ghp_test_token");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: "Not Found",
+        text: vi.fn().mockResolvedValue('{"message":"Not Found"}'),
+      }),
+    );
+
+    await expect(fetchGitHubIssue(999)).rejects.toThrow(
+      'GitHub: Failed to fetch issue 999 from burglekitt/worktree. 404 Not Found - {"message":"Not Found"}',
+    );
+  });
+
+  it("auto-resolves a token via gh CLI when the repo check fails without a token", async () => {
+    const cmdSpy = vi.spyOn(cli, "cmd");
+    cmdSpy.mockResolvedValueOnce("git@github.com:burglekitt/worktree.git"); // git remote get-url origin
+    cmdSpy.mockResolvedValueOnce(""); // git config token (no token)
+    cmdSpy.mockResolvedValueOnce("ghp_auto_token"); // gh auth token
+    cmdSpy.mockResolvedValueOnce(""); // gitSetConfigValue (saving token)
+
+    const fetchSpy = vi.fn();
+    fetchSpy.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      statusText: "Not Found",
+      text: vi.fn().mockResolvedValue(""),
+    }); // repo check fails
+    fetchSpy.mockResolvedValueOnce({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        url: "https://api.github.com/repos/burglekitt/worktree/issues/13",
+        repository_url: "https://api.github.com/repos/burglekitt/worktree",
+        labels_url:
+          "https://api.github.com/repos/burglekitt/worktree/issues/13/labels{/name}",
+        comments_url:
+          "https://api.github.com/repos/burglekitt/worktree/issues/13/comments",
+        events_url:
+          "https://api.github.com/repos/burglekitt/worktree/issues/13/events",
+        id: 201,
+        node_id: "I_kwDORiPVEM4BBBBB",
+        number: 13,
+        title: "Private issue",
+        body: null,
+        state: "open",
+        state_reason: null,
+        comments: 0,
+        created_at: "2026-03-22T12:00:00Z",
+        updated_at: "2026-03-22T12:00:00Z",
+        closed_at: null,
+        author_association: "CONTRIBUTOR",
+        type: null,
+        html_url: "https://github.com/burglekitt/worktree/issues/13",
+        user: { login: "baldurpan", html_url: "https://github.com/baldurpan" },
+      }),
+    }); // issue fetch succeeds with token
+    vi.stubGlobal("fetch", fetchSpy);
+
+    expectCommands(
+      "gh auth token",
+      'git config burglekitt.worktree.github.token "ghp_auto_token"',
+    );
+
+    const issue = await fetchGitHubIssue(13);
+
+    expect(issue.number).toBe(13);
+    expect(cmdSpy).toHaveBeenCalledWith("gh auth token");
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "https://api.github.com/repos/burglekitt/worktree/issues/13",
+      {
+        headers: expect.objectContaining({
+          Authorization: "Bearer ghp_auto_token",
+        }),
+      },
+    );
+  });
+});

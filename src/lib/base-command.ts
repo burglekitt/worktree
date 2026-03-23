@@ -38,7 +38,12 @@ export abstract class BaseCommand extends Command {
 
     if (isMissingConfig) {
       if (await this.confirmMissingConfig()) {
-        await this.config.runCommand("config", ["--missing"]);
+        await this.config.runCommand("config", [
+          "--missing",
+          "--yes",
+          "--names",
+          configNames.join(","),
+        ]);
       }
     }
   }

@@ -1,5 +1,6 @@
 import { confirm, input } from "@inquirer/prompts";
 import { Args, Flags } from "@oclif/core";
+import { fetchGitHubIssue } from "../integrations/github.js";
 import { BaseCommand } from "../lib/base-command.js";
 import { copyEnvFilesFromRootPath } from "../lib/env.js";
 import {
@@ -8,6 +9,7 @@ import {
   gitGetLocalBranches,
   gitGetRemoteBranches,
 } from "../lib/git.js";
+import type { ConfigName } from "../lib/types.js";
 import { isValidBranchName } from "../lib/validators.js";
 
 export default class Branch extends BaseCommand {
@@ -17,11 +19,18 @@ export default class Branch extends BaseCommand {
   static override description = "Create a worktree branch";
   static override examples = [
     "<%= config.bin %> <%= command.id %> my-new-branch",
+    "<%= config.bin %> <%= command.id %> my-new-branch --source origin/main",
+    "<%= config.bin %> <%= command.id %> --github 42",
   ];
+
   static override flags = {
     source: Flags.string({
       char: "s",
       description: "Source branch to create the worktree from",
+    }),
+    github: Flags.string({
+      char: "g",
+      description: "Create a branch from a GitHub issue (issue number)",
     }),
   };
 
@@ -72,18 +81,84 @@ export default class Branch extends BaseCommand {
     return true;
   }
 
-  private async getBranchName(branchNameArg?: string) {
-    if (branchNameArg && this.validateBranchName(branchNameArg)) {
+  private sanitizeBranchName(value: string) {
+    return value
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  private async getGitHubBranchPrefix(type?: string) {
+    if (type === "Feature") {
+      return (await gitGetConfigValue("branchPrefix.feature")) || "";
+    }
+    if (type === "Bug") {
+      return (await gitGetConfigValue("branchPrefix.bugfix")) || "";
+    }
+    if (type === "Task") {
+      return (await gitGetConfigValue("branchPrefix.chore")) || "";
+    }
+    return "";
+  }
+
+  private async getGithubIssueBranchName(issueNumberFlag: string) {
+    const issueNumber = Number(
+      issueNumberFlag.startsWith("#")
+        ? issueNumberFlag.slice(1)
+        : issueNumberFlag,
+    );
+    const issue = await fetchGitHubIssue(issueNumber);
+    const prefix = await this.getGitHubBranchPrefix(issue.type?.name);
+    return `${prefix}${issue.number}-${this.sanitizeBranchName(issue.title) || "issue"}`;
+  }
+
+  private async getBranchName(
+    branchNameArg?: string,
+    flags?: { github?: string },
+  ) {
+    let defaultValue = "";
+
+    if (flags?.github) {
+      defaultValue = await this.getGithubIssueBranchName(flags.github);
+    } else if (branchNameArg && this.validateBranchName(branchNameArg)) {
       return branchNameArg;
     }
-    return await input({ message: "Branch name", validate: isValidBranchName });
+    return await input({
+      message: "Branch name",
+      default: defaultValue,
+      prefill: "editable",
+      validate: isValidBranchName,
+    });
+  }
+
+  private getConfigNamesToVerify(flags: {
+    github?: string;
+    source?: string;
+  }): ConfigName[] {
+    const configNames: ConfigName[] = [];
+
+    if (!flags.source) {
+      configNames.push("defaultSourceBranch");
+    }
+    if (flags.github) {
+      configNames.push(
+        "branchPrefix.feature",
+        "branchPrefix.bugfix",
+        "branchPrefix.chore",
+      );
+    }
+    return configNames;
   }
 
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Branch);
+    const configNames = this.getConfigNamesToVerify(flags);
+
     // If there is no source flag provided, make sure defaultSourceBranch is configured
-    await this.verifyConfig(flags.source ? [] : ["defaultSourceBranch"]);
-    const branchName = await this.getBranchName(args.branchName);
+    await this.verifyConfig(configNames);
+    const branchName = await this.getBranchName(args.branchName, flags);
     const sourceBranch = await this.getSourceBranch(flags.source);
     const projectPath = await gitCreateWorktree(branchName, sourceBranch);
     await copyEnvFilesFromRootPath(projectPath);
