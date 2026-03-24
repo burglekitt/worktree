@@ -20,7 +20,6 @@ export function ProfileAvatarLink({
   return (
     <a
       href={href}
-      target="_blank"
       rel="noreferrer"
       style={{
         display: "inline-flex",

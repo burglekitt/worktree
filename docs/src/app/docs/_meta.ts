@@ -9,7 +9,6 @@ const meta: MetaRecord = {
   guides: {
     title: "Guides",
   },
-  troubleshooting: "Troubleshooting",
   faq: "FAQ",
   changelog: "Changelog",
 };
