@@ -21,11 +21,11 @@ export function Footer() {
         >
           <ProfileAvatarLink
             href={projectOwnerProfileUrl}
-            name={`MIT ${new Date().getFullYear()}© ${projectOwnerName}`}
+            name={projectOwnerName}
             avatarUrl={projectOwnerAvatarUrl}
             target="_blank"
-            showName
           />
+          <span>{`MIT ${new Date().getFullYear()} © ${projectOwnerName}`}</span>
         </div>
         <div>CLI Version: v{cliVersion}</div>
         <div>

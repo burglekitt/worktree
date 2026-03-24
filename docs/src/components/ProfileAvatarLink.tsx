@@ -23,7 +23,7 @@ export function ProfileAvatarLink({
     <a
       href={href}
       target={target}
-      rel="noreferrer"
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
       style={{
         display: "inline-flex",
         alignItems: "center",

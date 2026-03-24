@@ -24,7 +24,6 @@ describe("ProfileAvatarLink", () => {
     const image = screen.getByLabelText("burglekitt");
 
     expect(link).toHaveAttribute("href", "https://github.com/burglekitt");
-    expect(link).toHaveAttribute("rel", "noreferrer");
     expect(image).toBeInTheDocument();
   });
 
@@ -50,6 +49,12 @@ describe("ProfileAvatarLink", () => {
       expect(link).toHaveAttribute("target", target);
     } else {
       expect(link).not.toHaveAttribute("target");
+    }
+
+    if (target === "_blank") {
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    } else {
+      expect(link).not.toHaveAttribute("rel");
     }
   });
 
