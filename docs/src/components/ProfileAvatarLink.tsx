@@ -3,6 +3,7 @@ import Image from "next/image";
 type ProfileAvatarLinkProps = {
   href: string;
   name: string;
+  target?: HTMLAnchorElement["target"];
   avatarUrl: string;
   size?: number;
   showName?: boolean;
@@ -12,6 +13,7 @@ type ProfileAvatarLinkProps = {
 export function ProfileAvatarLink({
   href,
   name,
+  target,
   avatarUrl,
   size = 32,
   showName = false,
@@ -20,8 +22,8 @@ export function ProfileAvatarLink({
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noreferrer"
+      target={target}
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
       style={{
         display: "inline-flex",
         alignItems: "center",

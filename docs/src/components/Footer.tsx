@@ -23,19 +23,9 @@ export function Footer() {
             href={projectOwnerProfileUrl}
             name={projectOwnerName}
             avatarUrl={projectOwnerAvatarUrl}
-            style={{ gap: 0 }}
+            target="_blank"
           />
-          <span>
-            MIT {new Date().getFullYear()} ©{" "}
-            <a
-              href={projectOwnerProfileUrl}
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: "inherit" }}
-            >
-              {projectOwnerName}
-            </a>
-          </span>
+          <span>{`MIT ${new Date().getFullYear()} © ${projectOwnerName}`}</span>
         </div>
         <div>CLI Version: v{cliVersion}</div>
         <div>
@@ -47,6 +37,7 @@ export function Footer() {
                 href={maintainer.profileUrl}
                 name={maintainer.name}
                 avatarUrl={maintainer.avatarUrl}
+                target="_blank"
                 showName
               />
             ))}

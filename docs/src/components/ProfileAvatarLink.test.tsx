@@ -11,7 +11,7 @@ vi.mock("next/image", () => ({
 }));
 
 describe("ProfileAvatarLink", () => {
-  it("renders avatar external link", () => {
+  it("renders avatar link", () => {
     render(
       <ProfileAvatarLink
         href="https://github.com/burglekitt"
@@ -24,9 +24,38 @@ describe("ProfileAvatarLink", () => {
     const image = screen.getByLabelText("burglekitt");
 
     expect(link).toHaveAttribute("href", "https://github.com/burglekitt");
-    expect(link).toHaveAttribute("target", "_blank");
-    expect(link).toHaveAttribute("rel", "noreferrer");
     expect(image).toBeInTheDocument();
+  });
+
+  it.each`
+    target
+    ${"_blank"}
+    ${"_self"}
+    ${"_parent"}
+    ${"_top"}
+    ${undefined}
+  `("sets target attribute when target is $target", ({ target }) => {
+    render(
+      <ProfileAvatarLink
+        href="https://github.com/burglekitt"
+        name="burglekitt"
+        avatarUrl="https://github.com/burglekitt.png?size=64"
+        target={target}
+      />,
+    );
+
+    const link = screen.getByRole("link");
+    if (target) {
+      expect(link).toHaveAttribute("target", target);
+    } else {
+      expect(link).not.toHaveAttribute("target");
+    }
+
+    if (target === "_blank") {
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    } else {
+      expect(link).not.toHaveAttribute("rel");
+    }
   });
 
   it("shows profile name when configured", () => {
