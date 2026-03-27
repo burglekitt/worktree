@@ -1,6 +1,8 @@
 import { confirm, input } from "@inquirer/prompts";
 import { Args, Flags } from "@oclif/core";
+import ora from "ora";
 import { fetchGitHubIssue } from "../integrations/github.js";
+import { getJiraBranchNameFromIssue } from "../integrations/jira.js";
 import { BaseCommand } from "../lib/base-command.js";
 import { copyEnvFilesFromRootPath } from "../lib/env.js";
 import {
@@ -10,6 +12,7 @@ import {
   gitGetRemoteBranches,
 } from "../lib/git.js";
 import type { ConfigName } from "../lib/types.js";
+import { sanitizeBranchName } from "../lib/utils.js";
 import { isValidBranchName } from "../lib/validators.js";
 
 export default class Branch extends BaseCommand {
@@ -21,6 +24,7 @@ export default class Branch extends BaseCommand {
     "<%= config.bin %> <%= command.id %> my-new-branch",
     "<%= config.bin %> <%= command.id %> my-new-branch --source origin/main",
     "<%= config.bin %> <%= command.id %> --github 42",
+    "<%= config.bin %> <%= command.id %> --jira DEV-123",
   ];
 
   static override flags = {
@@ -31,6 +35,10 @@ export default class Branch extends BaseCommand {
     github: Flags.string({
       char: "g",
       description: "Create a branch from a GitHub issue (issue number)",
+    }),
+    jira: Flags.string({
+      char: "j",
+      description: "Create a branch from a Jira issue (issue ID)",
     }),
   };
 
@@ -81,15 +89,6 @@ export default class Branch extends BaseCommand {
     return true;
   }
 
-  private sanitizeBranchName(value: string) {
-    return value
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  }
-
   private async getGitHubBranchPrefix(type?: string) {
     if (type === "Feature") {
       return (await gitGetConfigValue("branchPrefix.feature")) || "";
@@ -109,17 +108,39 @@ export default class Branch extends BaseCommand {
         ? issueNumberFlag.slice(1)
         : issueNumberFlag,
     );
-    const issue = await fetchGitHubIssue(issueNumber);
-    const prefix = await this.getGitHubBranchPrefix(issue.type?.name);
-    return `${prefix}${issue.number}-${this.sanitizeBranchName(issue.title) || "issue"}`;
+    const spinner = ora(`Fetching GitHub issue #${issueNumber}`).start();
+    try {
+      const issue = await fetchGitHubIssue(issueNumber);
+      const prefix = await this.getGitHubBranchPrefix(issue.type?.name);
+      spinner.succeed();
+      return `${prefix}${issue.number}-${sanitizeBranchName(issue.title) || "issue"}`;
+    } catch (error) {
+      spinner.fail();
+      throw error;
+    }
+  }
+
+  private async getJiraIssueBranchName(issueKeyFlag: string) {
+    const spinner = ora(
+      `Fetching Jira issue ${issueKeyFlag.toUpperCase()}`,
+    ).start();
+    try {
+      const branchName = await getJiraBranchNameFromIssue(issueKeyFlag);
+      spinner.succeed();
+      return branchName;
+    } catch (error) {
+      spinner.fail();
+      throw error;
+    }
   }
 
   private async getBranchName(
     branchNameArg?: string,
-    flags?: { github?: string },
+    flags?: { github?: string; jira?: string },
   ) {
     if (
       !flags?.github &&
+      !flags?.jira &&
       branchNameArg &&
       this.validateBranchName(branchNameArg)
     ) {
@@ -128,7 +149,9 @@ export default class Branch extends BaseCommand {
 
     const defaultValue = flags?.github
       ? await this.getGithubIssueBranchName(flags.github)
-      : "";
+      : flags?.jira
+        ? await this.getJiraIssueBranchName(flags.jira)
+        : "";
 
     return await input({
       message: "Branch name",
@@ -140,9 +163,17 @@ export default class Branch extends BaseCommand {
 
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Branch);
+    if (flags.github && flags.jira) {
+      this.error("Please provide either --github or --jira, not both.");
+    }
+
     const configNames: ConfigName[] = !flags.source
       ? ["defaultSourceBranch"]
       : [];
+
+    if (flags.jira) {
+      configNames.push("jira.host", "jira.email", "jira.apiToken");
+    }
 
     // If there is no source flag provided, make sure defaultSourceBranch is configured
     await this.verifyConfig(configNames);

@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: Allow any in tests */
 import { confirm, input } from "@inquirer/prompts";
 import * as githubIntegration from "../integrations/github.js";
+import * as jiraIntegration from "../integrations/jira.js";
 import { copyEnvFilesFromRootPath } from "../lib/env.js";
 import * as git from "../lib/git.js";
 import * as validators from "../lib/validators.js";
@@ -15,6 +16,24 @@ vi.mock("@inquirer/prompts", () => ({
 // Mock env functions
 vi.mock("../lib/env.js", () => ({
   copyEnvFilesFromRootPath: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Mock ora to suppress spinner output during tests
+vi.mock("ora", () => ({
+  default: vi.fn(() => ({
+    start: vi.fn(function (this: any) {
+      return this;
+    }),
+    succeed: vi.fn(function (this: any) {
+      return this;
+    }),
+    fail: vi.fn(function (this: any) {
+      return this;
+    }),
+    stop: vi.fn(function (this: any) {
+      return this;
+    }),
+  })),
 }));
 
 describe("branch command", () => {
@@ -497,6 +516,74 @@ describe("branch command", () => {
 
       expect(mockInput).toHaveBeenCalledWith(
         expect.objectContaining({ default: "3-issue" }),
+      );
+    });
+  });
+
+  describe("--jira flag", () => {
+    it("should pre-fill input with branch name derived from jira issue", async () => {
+      vi.spyOn(jiraIntegration, "getJiraBranchNameFromIssue").mockResolvedValue(
+        "feature/DEV-123-add-dark-mode",
+      );
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        if (key === "defaultSourceBranch")
+          return Promise.resolve("origin/main");
+        if (key === "jira.host")
+          return Promise.resolve("example.atlassian.net");
+        if (key === "jira.email") return Promise.resolve("test@example.com");
+        if (key === "jira.apiToken") return Promise.resolve("token");
+        return Promise.resolve("");
+      });
+      mockInput.mockResolvedValue("feature/DEV-123-add-dark-mode");
+      const mockGitCreateWorktree = vi
+        .spyOn(git, "gitCreateWorktree")
+        .mockResolvedValue("/path/to/worktree");
+
+      (branch as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { jira: "dev-123" },
+      });
+
+      await branch.run();
+
+      expect(jiraIntegration.getJiraBranchNameFromIssue).toHaveBeenCalledWith(
+        "dev-123",
+      );
+      expect(mockInput).toHaveBeenCalledWith({
+        message: "Branch name",
+        default: "feature/DEV-123-add-dark-mode",
+        prefill: "editable",
+        validate: validators.isValidBranchName,
+      });
+      expect(mockGitCreateWorktree).toHaveBeenCalledWith(
+        "feature/DEV-123-add-dark-mode",
+        "origin/main",
+      );
+    });
+  });
+
+  describe("flag validation", () => {
+    it("should error when both --github and --jira are provided", async () => {
+      vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
+        if (key === "has-called-config") return Promise.resolve("true");
+        return Promise.resolve("");
+      });
+
+      (branch as any).parse = vi.fn().mockResolvedValue({
+        args: {},
+        flags: { github: "42", jira: "DEV-42" },
+      });
+
+      const mockError = vi.spyOn(branch, "error").mockImplementation(() => {
+        throw new Error("Please provide either --github or --jira, not both.");
+      });
+
+      await expect(branch.run()).rejects.toThrow(
+        "Please provide either --github or --jira, not both.",
+      );
+      expect(mockError).toHaveBeenCalledWith(
+        "Please provide either --github or --jira, not both.",
       );
     });
   });

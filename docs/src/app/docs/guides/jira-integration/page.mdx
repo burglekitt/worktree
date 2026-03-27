@@ -1,0 +1,62 @@
+---
+title: Jira Issue Integration
+---
+
+# Jira Issue Integration
+
+`worktree` can derive branch names directly from Jira issues in your Jira workspace.
+
+## Basic Usage
+
+```bash
+worktree branch --jira DEV-123
+worktree branch --jira dev-123
+```
+
+The generated branch name is shown as the default in the prompt, so you can accept it or edit it before creation.
+
+## How Branch Names Are Built
+
+1. Read issue type and summary from the Jira API.
+2. Sanitize the summary into a branch-safe slug.
+3. Optionally prepend a configured prefix based on issue type.
+
+Supported issue-type prefix mapping:
+
+- `Feature`, `Story`, and other non-bug/chore types -> `branchPrefix.feature`
+- `Bug` -> `branchPrefix.bugfix`
+- `Task` -> `branchPrefix.chore`
+
+If a prefix key is not configured, no prefix is applied.
+
+## Authentication Resolution
+
+Authentication is resolved in this order:
+
+1. Existing `jira.host`, `jira.email`, and `jira.apiToken` in local git config.
+2. Interactive prompts for missing values, then save to local git config.
+
+## Suggested Setup
+
+```bash
+worktree config jira.host https://your-domain.atlassian.net
+worktree config jira.email your-email@example.com
+worktree config jira.apiToken <api-token>
+worktree config branchPrefix.feature feature/
+worktree config branchPrefix.bugfix fix/
+worktree config branchPrefix.chore chore/
+```
+
+You can also configure only missing values:
+
+```bash
+worktree config --missing --names jira.host,jira.email,jira.apiToken,branchPrefix.feature,branchPrefix.bugfix,branchPrefix.chore
+```
+
+## Getting a Jira API Token
+
+1. Visit [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
+2. Click "Create API token"
+3. Copy the generated token and use it with `worktree config jira.apiToken`
+
+The token is stored locally in git config and never sent anywhere except to your Jira instance.
