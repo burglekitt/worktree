@@ -12,6 +12,7 @@ Create a new branch in a dedicated worktree.
 worktree branch <name>
 worktree branch <name> --source <remote-branch>
 worktree branch --github <issue-number>
+worktree branch --jira <issue-id>
 ```
 
 ## Examples
@@ -21,6 +22,8 @@ worktree branch feature/add-bulk-actions
 worktree branch feature/add-bulk-actions --source origin/release/1.4
 worktree branch --github 42
 worktree branch --github "#42"
+worktree branch --jira DEV-123
+worktree branch --jira dev-123
 ```
 
 ## GitHub Issue Branching
@@ -41,6 +44,25 @@ GitHub authentication is resolved in this order:
 1. `burglekitt.worktree.github.token` from local git config.
 2. `gh auth token` if GitHub CLI is installed and authenticated.
 3. Interactive token prompt, which is then saved in local git config.
+
+## Jira Issue Branching
+
+Use the `--jira` flag to create a suggested branch name from an issue in your Jira workspace.
+
+- The issue ID can be passed in any case (`dev-123`, `DEV-123`, etc.).
+- The generated name is pre-filled in the prompt and still editable.
+- If issue types are configured in the repository, these optional prefixes are applied:
+	- `branchPrefix.feature` for issue types like `Feature`, `Story`, and most non-bug/chore types
+	- `branchPrefix.bugfix` for issue type `Bug`
+	- `branchPrefix.chore` for issue type `Task`
+
+If no prefix is configured, `worktree` falls back to an empty prefix and still generates a valid branch name.
+
+Jira authentication requires three configuration keys:
+
+1. `burglekitt.worktree.jira.host` - Your Jira workspace URL (e.g., `https://company.atlassian.net`)
+2. `burglekitt.worktree.jira.email` - Your Jira email address
+3. `burglekitt.worktree.jira.apiToken` - Your Jira API token
 
 ## What It Does
 
