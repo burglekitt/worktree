@@ -1,4 +1,3 @@
-import ora from "ora";
 import { gitGetConfigValue } from "../lib/git.js";
 import { sanitizeBranchName } from "../lib/utils.js";
 import type {
@@ -120,51 +119,44 @@ export async function fetchJiraIssue(
 ): Promise<JiraIssueResultData> {
   const issueKey = getIssueKey(issueId);
   const credentials = await resolveJiraCredentials();
-  const spinner = ora(`Fetching Jira issue ${issueKey}`).start();
 
-  try {
-    const response = await fetch(
-      `https://${credentials.host}/rest/api/3/issue/${issueKey}`,
-      {
-        method: "GET",
-        headers: getJiraAuthHeaders(credentials),
-      },
+  const response = await fetch(
+    `https://${credentials.host}/rest/api/3/issue/${issueKey}`,
+    {
+      method: "GET",
+      headers: getJiraAuthHeaders(credentials),
+    },
+  );
+  const loginReason = response.headers?.get?.("x-seraph-loginreason");
+
+  if (response.status === 401 || loginReason === "AUTHENTICATED_FAILED") {
+    throw new Error(
+      "Jira: Authentication failed. Please verify jira.email and jira.apiToken in your config.",
     );
-    const loginReason = response.headers?.get?.("x-seraph-loginreason");
-
-    if (response.status === 401 || loginReason === "AUTHENTICATED_FAILED") {
-      throw new Error(
-        "Jira: Authentication failed. Please verify jira.email and jira.apiToken in your config.",
-      );
-    }
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error(
-        `Jira: Failed to fetch issue ${issueKey}. ${response.status} ${response.statusText}${errorMessage ? ` - ${errorMessage}` : ""}`,
-      );
-    }
-
-    const data = await response.json();
-
-    if (isJiraError(data)) {
-      const errorMessage =
-        data.errorMessages?.join(", ") ||
-        Object.values(data.errors).join(", ") ||
-        "Unknown Jira API error";
-      throw new Error(`Jira: ${errorMessage}`);
-    }
-
-    if (!isJiraIssue(data)) {
-      throw new Error(`Jira: Unable to find issue ${issueKey}.`);
-    }
-
-    spinner.succeed();
-    return data;
-  } catch (error) {
-    spinner.fail("Failed to fetch Jira issue");
-    throw error;
   }
+
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    throw new Error(
+      `Jira: Failed to fetch issue ${issueKey}. ${response.status} ${response.statusText}${errorMessage ? ` - ${errorMessage}` : ""}`,
+    );
+  }
+
+  const data = await response.json();
+
+  if (isJiraError(data)) {
+    const errorMessage =
+      data.errorMessages?.join(", ") ||
+      Object.values(data.errors).join(", ") ||
+      "Unknown Jira API error";
+    throw new Error(`Jira: ${errorMessage}`);
+  }
+
+  if (!isJiraIssue(data)) {
+    throw new Error(`Jira: Unable to find issue ${issueKey}.`);
+  }
+
+  return data;
 }
 
 export async function getJiraBranchNameFromIssue(
@@ -186,8 +178,6 @@ export async function getJiraBranchNameFromIssue(
 }
 
 export async function validateJiraCredentials(): Promise<boolean> {
-  const spinner = ora("Validating Jira credentials").start();
-
   try {
     const credentials = await resolveJiraCredentials();
     const response = await fetch(
@@ -198,15 +188,8 @@ export async function validateJiraCredentials(): Promise<boolean> {
       },
     );
 
-    if (response.ok) {
-      spinner.succeed("Success");
-      return true;
-    }
-
-    spinner.fail("Invalid credentials");
-    return false;
+    return response.ok;
   } catch {
-    spinner.fail("Network error");
     return false;
   }
 }

@@ -18,6 +18,24 @@ vi.mock("../lib/env.js", () => ({
   copyEnvFilesFromRootPath: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Mock ora to suppress spinner output during tests
+vi.mock("ora", () => ({
+  default: vi.fn(() => ({
+    start: vi.fn(function (this: any) {
+      return this;
+    }),
+    succeed: vi.fn(function (this: any) {
+      return this;
+    }),
+    fail: vi.fn(function (this: any) {
+      return this;
+    }),
+    stop: vi.fn(function (this: any) {
+      return this;
+    }),
+  })),
+}));
+
 describe("branch command", () => {
   let branch: Branch;
   let mockOpenWorktreePath: ReturnType<typeof vi.spyOn>;

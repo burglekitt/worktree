@@ -16,7 +16,6 @@ function makeJiraIssue(overrides: Record<string, unknown> = {}) {
         id: "10007",
         name: "Story",
       },
-      customfield_10359: undefined,
     },
     ...overrides,
   };

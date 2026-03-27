@@ -1,5 +1,6 @@
 import { confirm, input } from "@inquirer/prompts";
 import { Args, Flags } from "@oclif/core";
+import ora from "ora";
 import { fetchGitHubIssue } from "../integrations/github.js";
 import { getJiraBranchNameFromIssue } from "../integrations/jira.js";
 import { BaseCommand } from "../lib/base-command.js";
@@ -115,13 +116,30 @@ export default class Branch extends BaseCommand {
         ? issueNumberFlag.slice(1)
         : issueNumberFlag,
     );
-    const issue = await fetchGitHubIssue(issueNumber);
-    const prefix = await this.getGitHubBranchPrefix(issue.type?.name);
-    return `${prefix}${issue.number}-${this.sanitizeBranchName(issue.title) || "issue"}`;
+    const spinner = ora(`Fetching GitHub issue #${issueNumber}`).start();
+    try {
+      const issue = await fetchGitHubIssue(issueNumber);
+      const prefix = await this.getGitHubBranchPrefix(issue.type?.name);
+      spinner.succeed();
+      return `${prefix}${issue.number}-${this.sanitizeBranchName(issue.title) || "issue"}`;
+    } catch (error) {
+      spinner.fail();
+      throw error;
+    }
   }
 
   private async getJiraIssueBranchName(issueKeyFlag: string) {
-    return getJiraBranchNameFromIssue(issueKeyFlag);
+    const spinner = ora(
+      `Fetching Jira issue ${issueKeyFlag.toUpperCase()}`,
+    ).start();
+    try {
+      const branchName = await getJiraBranchNameFromIssue(issueKeyFlag);
+      spinner.succeed();
+      return branchName;
+    } catch (error) {
+      spinner.fail();
+      throw error;
+    }
   }
 
   private async getBranchName(
