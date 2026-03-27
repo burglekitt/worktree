@@ -1,0 +1,39 @@
+name: Agent checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  agent-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: Install
+        run: pnpm install
+
+      - name: Run docs tests
+        run: pnpm docs:test
+
+      - name: Format & Lint (example)
+        run: |
+          pnpm format:check || echo 'format check not configured'
+          pnpm lint || echo 'lint not configured'
+
+      - name: Secret scan - detect accidental WORKTREE_OPENROUTER_API_KEY
+        run: |
+          if git grep -n "WORKTREE_OPENROUTER_API_KEY" >/dev/null 2>&1; then
+            echo "ERROR: WORKTREE_OPENROUTER_API_KEY found in repository; remove it and rotate the key."
+            git --no-pager grep -n "WORKTREE_OPENROUTER_API_KEY"
+            exit 1
+          fi

@@ -4,7 +4,10 @@ import { Layout } from "nextra-theme-docs";
 import type { ReactNode } from "react";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
+import { ChatFAB } from "./components/ChatFAB";
+
 import "nextra-theme-docs/style.css";
+import "../styles/globals.css";
 
 export { metadata } from "../lib/site-meta";
 
@@ -17,7 +20,13 @@ export default async function RootLayout({
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head />
       <body>
+        <ChatFAB />
         <Layout
+          themeSwitch={{
+            dark: "Dark",
+            light: "Light",
+            system: "System",
+          }}
           navbar={<Navbar />}
           pageMap={await getPageMap()}
           footer={<Footer />}

@@ -10,3 +10,4 @@ oclif.manifest.json
 docs/out/
 docs/.vercel/
 docs/pnpm-lock.yaml
+**/.env.local
