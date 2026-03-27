@@ -14,7 +14,7 @@
     "lint:fix": "biome lint --write",
     "check": "biome check",
     "check:fix": "biome check --write",
-    "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm test",
+    "verify": "pnpm check && pnpm typecheck && pnpm test",
     "prepublishOnly": "pnpm build && pnpm test",
     "docs:sync-version": "node ./bin/sync-docs-version.mjs && biome format ./docs/src/lib/site-meta.ts --write",
     "docs:test": "pnpm --filter docs test",

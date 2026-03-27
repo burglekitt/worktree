@@ -97,12 +97,10 @@ async function resolveJiraCredentials(): Promise<JiraCredentials> {
 }
 
 function getJiraBranchType(issue: JiraIssueResultData) {
-  const workCategory = issue.fields.customfield_10359;
   const issueType = issue.fields.issuetype;
   const issueTypeName = issueType.name.toLowerCase();
 
   if (
-    workCategory?.id === "10301" ||
     issueTypeName === "task" ||
     issueTypeName === "chore" ||
     issueTypeName === "maintenance"
@@ -110,11 +108,7 @@ function getJiraBranchType(issue: JiraIssueResultData) {
     return "chore" as const;
   }
 
-  if (
-    workCategory?.id === "10302" ||
-    issueType.id === "10008" ||
-    issueTypeName === "bug"
-  ) {
+  if (issueTypeName === "bug") {
     return "bugfix" as const;
   }
 
