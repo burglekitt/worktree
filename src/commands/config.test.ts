@@ -44,7 +44,7 @@ describe("config command", () => {
 
       vi.spyOn(git, "gitGetConfigValue").mockImplementation((key: string) => {
         if (key === "has-called-config") return Promise.resolve("true");
-        if (key === "jira.domain")
+        if (key === "jira.host")
           return Promise.resolve("https://test.atlassian.net");
         if (key === "jira.email") return Promise.resolve("test@example.com");
         if (key === "jira.apiToken") return Promise.resolve("api-token-123");
@@ -57,7 +57,7 @@ describe("config command", () => {
       await config.run();
 
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        "jira.domain=https://test.atlassian.net",
+        "jira.host=https://test.atlassian.net",
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
         "jira.email=test@example.com",
@@ -81,7 +81,7 @@ describe("config command", () => {
 
       await config.run();
 
-      expect(mockConsoleLog).toHaveBeenCalledWith("jira.domain");
+      expect(mockConsoleLog).toHaveBeenCalledWith("jira.host");
       expect(mockConsoleLog).toHaveBeenCalledWith("jira.email");
       expect(mockConsoleLog).toHaveBeenCalledWith("jira.apiToken");
       expect(mockConsoleLog).toHaveBeenCalledWith("codeEditor");

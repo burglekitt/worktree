@@ -14,9 +14,6 @@ import {
   validateConfigValue,
 } from "../lib/validators.js";
 
-// TODO: Implement properly when Jira integration has been added
-const JIRA_ENABLED = false;
-
 export default class Config extends BaseCommand {
   static override description = "Configure worktree CLI settings";
   static override examples = ["<%= config.bin %> <%= command.id %>"];
@@ -114,8 +111,7 @@ export default class Config extends BaseCommand {
     names?: string;
   }) {
     const configNames = await this.getPromptConfigNames(flags);
-    const hasJiraPrompt =
-      JIRA_ENABLED && configNames.some((name) => name.startsWith("jira"));
+    const hasJiraPrompt = configNames.some((name) => name.startsWith("jira"));
     const hasBranchPrefixPrompt = configNames.some((name) =>
       name.startsWith("branchPrefix"),
     );
@@ -137,11 +133,12 @@ export default class Config extends BaseCommand {
         flags.yes,
       ))
     ) {
-      if (shouldPrompt("jira.domain")) {
+      if (shouldPrompt("jira.host")) {
         const jiraDomain = await input({
-          message: "Jira subdomain or full domain",
+          message: "Jira host",
+          default: "example.atlassian.com",
         });
-        await gitSetConfigValue("jira.domain", jiraDomain);
+        await gitSetConfigValue("jira.host", jiraDomain);
       }
 
       if (shouldPrompt("jira.email")) {
@@ -151,6 +148,22 @@ export default class Config extends BaseCommand {
           validate: isValidEmail,
         });
         await gitSetConfigValue("jira.email", jiraEmail);
+      }
+
+      if (shouldPrompt("jira.apiToken")) {
+        const JiraTokenInstructions = [
+          "To find or create your token, follow these steps:",
+          " - Go to https://id.atlassian.com/manage-profile/security/api-tokens",
+          " - Click 'Create Classic API token'",
+          " - Give your token a name and expiration date.",
+          " - Copy your new token",
+        ];
+
+        this.log(JiraTokenInstructions.join(EOL) + EOL);
+        const jiraApiToken = await input({
+          message: "Jira API token",
+        });
+        await gitSetConfigValue("jira.apiToken", jiraApiToken);
       }
     }
 

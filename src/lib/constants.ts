@@ -1,6 +1,6 @@
 export const CONFIG_NAMES = [
   "has-called-config",
-  "jira.domain",
+  "jira.host",
   "jira.email",
   "jira.apiToken",
   "github.token",

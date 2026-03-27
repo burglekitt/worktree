@@ -1,6 +1,7 @@
 import { confirm, input } from "@inquirer/prompts";
 import { Args, Flags } from "@oclif/core";
 import { fetchGitHubIssue } from "../integrations/github.js";
+import { getJiraBranchNameFromIssue } from "../integrations/jira.js";
 import { BaseCommand } from "../lib/base-command.js";
 import { copyEnvFilesFromRootPath } from "../lib/env.js";
 import {
@@ -21,6 +22,7 @@ export default class Branch extends BaseCommand {
     "<%= config.bin %> <%= command.id %> my-new-branch",
     "<%= config.bin %> <%= command.id %> my-new-branch --source origin/main",
     "<%= config.bin %> <%= command.id %> --github 42",
+    "<%= config.bin %> <%= command.id %> --jira DEV-123",
   ];
 
   static override flags = {
@@ -31,6 +33,10 @@ export default class Branch extends BaseCommand {
     github: Flags.string({
       char: "g",
       description: "Create a branch from a GitHub issue (issue number)",
+    }),
+    jira: Flags.string({
+      char: "j",
+      description: "Create a branch from a Jira issue (issue ID)",
     }),
   };
 
@@ -114,12 +120,17 @@ export default class Branch extends BaseCommand {
     return `${prefix}${issue.number}-${this.sanitizeBranchName(issue.title) || "issue"}`;
   }
 
+  private async getJiraIssueBranchName(issueKeyFlag: string) {
+    return getJiraBranchNameFromIssue(issueKeyFlag);
+  }
+
   private async getBranchName(
     branchNameArg?: string,
-    flags?: { github?: string },
+    flags?: { github?: string; jira?: string },
   ) {
     if (
       !flags?.github &&
+      !flags?.jira &&
       branchNameArg &&
       this.validateBranchName(branchNameArg)
     ) {
@@ -128,7 +139,9 @@ export default class Branch extends BaseCommand {
 
     const defaultValue = flags?.github
       ? await this.getGithubIssueBranchName(flags.github)
-      : "";
+      : flags?.jira
+        ? await this.getJiraIssueBranchName(flags.jira)
+        : "";
 
     return await input({
       message: "Branch name",
@@ -140,9 +153,17 @@ export default class Branch extends BaseCommand {
 
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Branch);
+    if (flags.github && flags.jira) {
+      this.error("Please provide either --github or --jira, not both.");
+    }
+
     const configNames: ConfigName[] = !flags.source
       ? ["defaultSourceBranch"]
       : [];
+
+    if (flags.jira) {
+      configNames.push("jira.host", "jira.email", "jira.apiToken");
+    }
 
     // If there is no source flag provided, make sure defaultSourceBranch is configured
     await this.verifyConfig(configNames);
