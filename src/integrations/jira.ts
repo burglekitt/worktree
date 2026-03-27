@@ -1,15 +1,28 @@
 import { gitGetConfigValue } from "../lib/git.js";
 import { sanitizeBranchName } from "../lib/utils.js";
-import type {
-  JiraErrorResponse,
-  JiraIssue,
-  JiraIssueResultData,
-} from "./jira.types.js";
 
 interface JiraCredentials {
   host: string;
   email: string;
   apiToken: string;
+}
+
+interface JiraIssue {
+  id: string;
+  key: string;
+  fields: {
+    summary: string;
+    issuetype: {
+      id: string;
+      name: string;
+    };
+    [key: string]: unknown;
+  };
+}
+
+interface JiraErrorResponse {
+  errorMessages?: string[];
+  errors: Record<string, string>;
 }
 
 export function isJiraError(response: unknown): response is JiraErrorResponse {
@@ -95,7 +108,7 @@ async function resolveJiraCredentials(): Promise<JiraCredentials> {
   };
 }
 
-function getJiraBranchType(issue: JiraIssueResultData) {
+function getJiraBranchType(issue: JiraIssue) {
   const issueType = issue.fields.issuetype;
   const issueTypeName = issueType.name.toLowerCase();
 
@@ -114,9 +127,7 @@ function getJiraBranchType(issue: JiraIssueResultData) {
   return "feature" as const;
 }
 
-export async function fetchJiraIssue(
-  issueId: string,
-): Promise<JiraIssueResultData> {
+export async function fetchJiraIssue(issueId: string): Promise<JiraIssue> {
   const issueKey = getIssueKey(issueId);
   const credentials = await resolveJiraCredentials();
 
@@ -147,7 +158,7 @@ export async function fetchJiraIssue(
   if (isJiraError(data)) {
     const errorMessage =
       data.errorMessages?.join(", ") ||
-      Object.values(data.errors).join(", ") ||
+      Object.values(data.errors ?? {}).join(", ") ||
       "Unknown Jira API error";
     throw new Error(`Jira: ${errorMessage}`);
   }

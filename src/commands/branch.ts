@@ -12,6 +12,7 @@ import {
   gitGetRemoteBranches,
 } from "../lib/git.js";
 import type { ConfigName } from "../lib/types.js";
+import { sanitizeBranchName } from "../lib/utils.js";
 import { isValidBranchName } from "../lib/validators.js";
 
 export default class Branch extends BaseCommand {
@@ -88,15 +89,6 @@ export default class Branch extends BaseCommand {
     return true;
   }
 
-  private sanitizeBranchName(value: string) {
-    return value
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  }
-
   private async getGitHubBranchPrefix(type?: string) {
     if (type === "Feature") {
       return (await gitGetConfigValue("branchPrefix.feature")) || "";
@@ -121,7 +113,7 @@ export default class Branch extends BaseCommand {
       const issue = await fetchGitHubIssue(issueNumber);
       const prefix = await this.getGitHubBranchPrefix(issue.type?.name);
       spinner.succeed();
-      return `${prefix}${issue.number}-${this.sanitizeBranchName(issue.title) || "issue"}`;
+      return `${prefix}${issue.number}-${sanitizeBranchName(issue.title) || "issue"}`;
     } catch (error) {
       spinner.fail();
       throw error;

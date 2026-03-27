@@ -134,11 +134,11 @@ export default class Config extends BaseCommand {
       ))
     ) {
       if (shouldPrompt("jira.host")) {
-        const jiraDomain = await input({
+        const jiraHost = await input({
           message: "Jira host",
           default: "example.atlassian.com",
         });
-        await gitSetConfigValue("jira.host", jiraDomain);
+        await gitSetConfigValue("jira.host", jiraHost);
       }
 
       if (shouldPrompt("jira.email")) {
@@ -151,7 +151,7 @@ export default class Config extends BaseCommand {
       }
 
       if (shouldPrompt("jira.apiToken")) {
-        const JiraTokenInstructions = [
+        const jiraTokenInstructions = [
           "To find or create your token, follow these steps:",
           " - Go to https://id.atlassian.com/manage-profile/security/api-tokens",
           " - Click 'Create Classic API token'",
@@ -159,7 +159,7 @@ export default class Config extends BaseCommand {
           " - Copy your new token",
         ];
 
-        this.log(JiraTokenInstructions.join(EOL) + EOL);
+        this.log(jiraTokenInstructions.join(EOL) + EOL);
         const jiraApiToken = await input({
           message: "Jira API token",
         });
