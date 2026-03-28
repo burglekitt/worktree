@@ -6,7 +6,6 @@ import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
 import { ChatFAB } from "./components/ChatFAB";
 
-import "nextra-theme-docs/style.css";
 import "../styles/globals.css";
 
 export { metadata } from "../lib/site-meta";

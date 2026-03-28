@@ -71,26 +71,43 @@ export function ChatFAB() {
   return (
     <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="right">
       <Drawer.Trigger
-        aria-label="Open chat"
-        className="bg-blue-600 position-fixed rounded-full w-16 h-16 flex items-center justify-center shadow-lg"
+        onClick={() => setOpen(true)}
+        className="color-red bg-blue-500 hover:bg-blue-600 active:bg-blue-700 focus:ring focus:ring-blue-300"
         style={{
           position: "fixed",
           right: 24,
           bottom: 24,
           zIndex: 9999,
-          background: "#00f0ff",
-          color: "#fff",
-          boxShadow: "0 0 16px 4px #00f0ff, 0 2px 8px #0002",
+          width: 64,
+          height: 64,
+          borderRadius: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+
           border: "2px solid #00e0ff",
+          padding: 8,
         }}
       >
         <ChatBubbleBottomCenterIcon style={{ width: 28, height: 28 }} />
       </Drawer.Trigger>
 
       <Drawer.Portal>
-        <Drawer.Backdrop className="bg-black/30" />
+        <Drawer.Backdrop
+          className="bg-black/30"
+          style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+        />
         <Drawer.Viewport className="z-50">
-          <Drawer.Popup className="w-[400px] max-w-full h-full bg-white border-l flex flex-col shadow-2xl">
+          <Drawer.Popup
+            className="w-[400px] max-w-full h-full bg-white border-l flex flex-col shadow-2xl"
+            style={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              height: "100vh",
+              zIndex: 9999,
+            }}
+          >
             <div className="flex items-center justify-between p-4 border-b">
               <div className="flex items-center gap-2">
                 <div className="font-semibold text-lg">Chat</div>
@@ -140,15 +157,12 @@ export function ChatFAB() {
                 >
                   Clear
                 </Button>
-                <Drawer.Close asChild>
-                  <button
-                    type="button"
-                    aria-label="Close chat"
-                    className="px-2 py-1 rounded text-sm bg-red-50 border"
-                    onClick={() => setOpen(false)}
-                  >
-                    <XMarkIcon style={{ width: 16, height: 16 }} />
-                  </button>
+                <Drawer.Close
+                  aria-label="Close chat"
+                  className="px-2 py-1 rounded text-sm bg-red-50 border"
+                  onClick={() => setOpen(false)}
+                >
+                  <XMarkIcon style={{ width: 16, height: 16 }} />
                 </Drawer.Close>
               </div>
             </div>
