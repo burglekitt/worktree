@@ -2,24 +2,22 @@
 
 import { Button } from "@base-ui/react";
 import { Drawer } from "@base-ui/react/drawer";
-import { Select } from "@base-ui/react/select";
 import {
   ChatBubbleBottomCenterIcon,
-  CheckIcon,
-  ChevronUpIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 // Popover.Close is not exported; use a regular button to close
 import { useEffect, useMemo, useState } from "react";
+import { ChatModelSelect } from "./ChatModelSelect";
 import { ChatPanel } from "./ChatPanel";
 
 const FREE_MODELS = [
+  { label: "GPT-5 mini (free)", value: "openai/gpt-5.1-mini" },
+  { label: "GPT-4.1 (free)", value: "openai/gpt-4.1" },
   { label: "GPT-3.5 (free)", value: "openai/gpt-3.5-turbo" },
   { label: "Mistral Small (free)", value: "mistral-small" },
   { label: "Llama Mini (free)", value: "llama-mini" },
   // Add more free models here as desired
-  { label: "GPT-5 mini (free)", value: "openai/gpt-5.1-mini" },
-  { label: "GPT-4.1 (free)", value: "openai/gpt-4.1" },
 ];
 
 export function ChatFAB() {
@@ -31,6 +29,7 @@ export function ChatFAB() {
       return FREE_MODELS[0].value;
     }
   });
+  console.log("Selected model:", model);
 
   const [sessionKey, setSessionKey] = useState(0);
 
@@ -72,24 +71,9 @@ export function ChatFAB() {
     <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="right">
       <Drawer.Trigger
         onClick={() => setOpen(true)}
-        className="color-red bg-blue-500 hover:bg-blue-600 active:bg-blue-700 focus:ring focus:ring-blue-300"
-        style={{
-          position: "fixed",
-          right: 24,
-          bottom: 24,
-          zIndex: 9999,
-          width: 64,
-          height: 64,
-          borderRadius: 9999,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-
-          border: "2px solid #00e0ff",
-          padding: 8,
-        }}
+        className="fixed right-6 bottom-6 z-[9999] w-16 h-16 rounded-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700 focus:ring focus:ring-blue-300 border-2 border-cyan-400 dark:border-cyan-500"
       >
-        <ChatBubbleBottomCenterIcon style={{ width: 28, height: 28 }} />
+        <ChatBubbleBottomCenterIcon className="w-7 h-7 text-white" />
       </Drawer.Trigger>
 
       <Drawer.Portal>
@@ -99,7 +83,7 @@ export function ChatFAB() {
         />
         <Drawer.Viewport className="z-50">
           <Drawer.Popup
-            className="w-[400px] max-w-full h-full bg-gray-900 border-l flex flex-col shadow-2xl"
+            className="w-[400px] max-w-full h-full bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-gray-800 flex flex-col shadow-2xl text-gray-900 dark:text-gray-100"
             style={{
               position: "fixed",
               top: 0,
@@ -111,55 +95,24 @@ export function ChatFAB() {
             <div className="flex items-center justify-between p-4 border-b">
               <div className="flex items-center gap-2">
                 <div className="font-semibold text-lg">Chat</div>
-                <Select.Root
-                  items={modelOptions}
-                  value={model}
-                  onValueChange={handleModelChange}
-                >
-                  <Select.Label className="text-sm text-gray-500">
-                    Model:
-                  </Select.Label>
-                  <Select.Trigger className="px-2 py-1 border rounded flex items-center gap-1 min-w-[120px]">
-                    <Select.Value placeholder="Select model" />
-                    <Select.Icon>
-                      <ChevronUpIcon />
-                    </Select.Icon>
-                  </Select.Trigger>
-                  <Select.Portal>
-                    <Select.Positioner sideOffset={8} className="z-50">
-                      <Select.ScrollUpArrow />
-                      <Select.Popup className="bg-white border rounded shadow-lg">
-                        <Select.List>
-                          {modelOptions.map(({ label, value }) => (
-                            <Select.Item
-                              key={value}
-                              value={value}
-                              className="flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-blue-50"
-                            >
-                              <Select.ItemText>{label}</Select.ItemText>
-                              <Select.ItemIndicator>
-                                <CheckIcon className="text-blue-500" />
-                              </Select.ItemIndicator>
-                            </Select.Item>
-                          ))}
-                        </Select.List>
-                      </Select.Popup>
-                      <Select.ScrollDownArrow />
-                    </Select.Positioner>
-                  </Select.Portal>
-                </Select.Root>
+                <ChatModelSelect
+                  label="Model"
+                  models={modelOptions}
+                  onChange={handleModelChange}
+                  selectedModel={model}
+                />
               </div>
               <div className="flex items-center gap-2">
                 <Button
                   onClick={handleClear}
-                  className="px-2 py-1 text-sm border rounded bg-gray-100"
+                  className="px-2 py-1 text-sm border rounded bg-gray-100 dark:bg-slate-800"
                   aria-label="Clear conversation"
                 >
                   Clear
                 </Button>
                 <Drawer.Close
                   aria-label="Close chat"
-                  className="px-2 py-1 rounded text-sm bg-red-50 border"
+                  className="px-2 py-1 rounded text-sm border"
                   onClick={() => setOpen(false)}
                 >
                   <XMarkIcon style={{ width: 16, height: 16 }} />
