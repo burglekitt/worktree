@@ -11,6 +11,9 @@ title: Configuration
 - `defaultSourceBranch` (example: `origin/main`)
 - `codeEditor` (example: `code`)
 - `github.token` (GitHub personal access token)
+- `jira.host` (Your Jira workspace URL, example: `https://company.atlassian.net`)
+- `jira.email` (Your Jira email address)
+- `jira.apiToken` (Jira API token)
 - `branchPrefix.feature` (example: `feature/`)
 - `branchPrefix.bugfix` (example: `fix/`)
 - `branchPrefix.chore` (example: `chore/`)
@@ -23,6 +26,10 @@ worktree config --missing
 worktree config --missing --names defaultSourceBranch,github.token
 worktree config defaultSourceBranch origin/main
 worktree config codeEditor code
+worktree config github.token <token>
+worktree config jira.host https://company.atlassian.net
+worktree config jira.email your-email@example.com
+worktree config jira.apiToken <api-token>
 worktree config branchPrefix.feature feature/
 worktree config branchPrefix.bugfix fix/
 worktree config branchPrefix.chore chore/
@@ -34,8 +41,16 @@ worktree config branchPrefix.chore chore/
 - Branch prefix keys are optional. If missing, `worktree` uses no prefix.
 - If `github.token` is missing, `worktree` can attempt to use `gh auth token` and then prompt.
 
+## Jira Integration Notes
+
+- `worktree branch --jira <issue-id>` reads issues from your configured Jira workspace.
+- All three Jira config keys (`jira.host`, `jira.email`, `jira.apiToken`) are required.
+- Branch prefix keys are optional. If missing, `worktree` uses no prefix.
+- Issue IDs are case-insensitive (both `dev-123` and `DEV-123` work).
+
 ## Recommended Team Baseline
 
 1. Agree on one source branch (`origin/main` for most teams).
 2. Standardize branch naming conventions.
 3. Keep editor command consistent across local setups.
+4. For Jira integration, share workspace URL and branch prefix conventions.
