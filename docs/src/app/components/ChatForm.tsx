@@ -20,8 +20,11 @@ export function ChatForm({ onSubmit, disabled }: ChatFormProps) {
       // reset the form (clears fields to defaults)
       formApi.reset();
       formApi.setFieldValue("message", ""); // ensure message field is cleared after reset
-      // TODO focus the input after submit
-      inputRef.current?.focus();
+      // focus the input after the DOM update
+      // TODO This is crap but it works
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     },
   });
 
