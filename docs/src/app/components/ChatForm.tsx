@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form-nextjs";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { ChatInput } from "./ChatInput";
 import { ChatSubmitButton } from "./ChatSubmitButton";
 
@@ -27,6 +27,14 @@ export function ChatForm({ onSubmit, disabled }: ChatFormProps) {
       }, 0);
     },
   });
+
+  // Focus the input when the form mounts (allow entrance animation to start).
+  useEffect(() => {
+    const t = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 180);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <form

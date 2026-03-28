@@ -7,9 +7,10 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 // Popover.Close is not exported; use a regular button to close
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatModelSelect } from "./ChatModelSelect";
 import { ChatPanel } from "./ChatPanel";
+import { cn } from "./cn";
 
 const FREE_MODELS = [
   { label: "GPT-5 mini (free)", value: "openai/gpt-5.1-mini" },
@@ -22,6 +23,10 @@ const FREE_MODELS = [
 
 export function ChatFAB() {
   const [open, setOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const popupRef = useRef<HTMLDivElement | null>(null);
+  const backdropRef = useRef<HTMLDivElement | null>(null);
+  const [entered, setEntered] = useState(false);
   const [model, setModel] = useState(() => {
     try {
       return localStorage.getItem("docs_chat_model") || FREE_MODELS[0].value;
@@ -41,24 +46,28 @@ export function ChatFAB() {
     }
   }, [model]);
 
-  // keyboard: open chat with Ctrl+K for convenience
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setOpen((s) => !s);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
   const modelOptions = useMemo(() => FREE_MODELS, []);
 
   const handleClear = () => {
     // bump key to remount ChatPanel (clears internal useChat state)
     setSessionKey((k) => k + 1);
   };
+
+  const handleOpen = useCallback(() => {
+    setIsClosing(false);
+    setOpen(true);
+    setEntered(false);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    // trigger CSS exit animation then unmount
+    setIsClosing(true);
+    setEntered(false);
+    setTimeout(() => {
+      setOpen(false);
+      setIsClosing(false);
+    }, 480);
+  }, []);
 
   function handleModelChange(value: string | null): void {
     if (value) {
@@ -67,10 +76,42 @@ export function ChatFAB() {
     }
   }
 
+  // keyboard: open chat with Ctrl+K for convenience
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        // toggle using our handler so animations run
+        if (open) handleClose();
+        else handleOpen();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, handleClose, handleOpen]);
+
+  // Drive entrance using a short two-phase mount: render offscreen then set
+  // `entered` on the next frame so CSS transition runs. This avoids the
+  // instant pop when the element first mounts.
+  useEffect(() => {
+    if (!open) {
+      setEntered(false);
+      return;
+    }
+    // Ensure we start off-screen, then flip to entered on next frame.
+    setEntered(false);
+    const raf = requestAnimationFrame(() => setEntered(true));
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
+
   return (
-    <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="right">
+    <Drawer.Root
+      open={open}
+      onOpenChange={(v) => (v ? handleOpen() : handleClose())}
+      swipeDirection="right"
+    >
       <Drawer.Trigger
-        onClick={() => setOpen(true)}
+        onClick={() => handleOpen()}
         className="fixed right-6 bottom-6 z-[9999] w-16 h-16 rounded-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700 focus:ring focus:ring-blue-300 border-2 border-cyan-400 dark:border-cyan-500"
       >
         <ChatBubbleBottomCenterIcon className="w-7 h-7 text-white" />
@@ -78,19 +119,40 @@ export function ChatFAB() {
 
       <Drawer.Portal>
         <Drawer.Backdrop
-          className="bg-black/30"
-          style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+          ref={backdropRef}
+          className={`bg-black/30 fixed inset-0 z-[9998] transition-opacity duration-300 ${
+            open || isClosing ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         />
         <Drawer.Viewport className="z-50">
           <Drawer.Popup
-            className="w-[400px] max-w-full h-full bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-gray-800 flex flex-col shadow-2xl text-gray-900 dark:text-gray-100"
-            style={{
-              position: "fixed",
-              top: 0,
-              right: 0,
-              height: "100vh",
-              zIndex: 9999,
-            }}
+            ref={popupRef}
+            className={cn(
+              // Positioning & painting hints
+              "fixed top-0 bottom-0 right-0",
+              "will-change-transform",
+
+              // Stacking & sizing
+              "z-[9999]",
+              "w-[400px] max-w-full h-full",
+
+              // Performance / rendering
+              "transform-gpu",
+              "webkitbackface-visibility-hidden",
+
+              // Visuals
+              "bg-white dark:bg-slate-900",
+              "border-l border-gray-200 dark:border-gray-800",
+
+              // Layout
+              "flex flex-col shadow-2xl text-gray-900 dark:text-gray-100",
+
+              // Animation
+              "transition-transform duration-500 ease-in-out",
+
+              // State: toggle translate for entrance/exit
+              entered && !isClosing ? "translate-x-0" : "translate-x-full",
+            )}
           >
             <div className="flex items-center justify-between p-4 border-b">
               <div className="flex items-center gap-2">
@@ -113,15 +175,14 @@ export function ChatFAB() {
                 <Drawer.Close
                   aria-label="Close chat"
                   className="px-2 py-1 rounded text-sm border"
-                  onClick={() => setOpen(false)}
+                  onClick={() => handleClose()}
                 >
                   <XMarkIcon style={{ width: 16, height: 16 }} />
                 </Drawer.Close>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-2">
-              <ChatPanel key={sessionKey} model={model} />
-            </div>
+
+            <ChatPanel key={sessionKey} model={model} />
           </Drawer.Popup>
         </Drawer.Viewport>
       </Drawer.Portal>
