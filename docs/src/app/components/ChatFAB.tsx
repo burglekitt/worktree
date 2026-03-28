@@ -99,7 +99,7 @@ export function ChatFAB() {
         />
         <Drawer.Viewport className="z-50">
           <Drawer.Popup
-            className="w-[400px] max-w-full h-full bg-white border-l flex flex-col shadow-2xl"
+            className="w-[400px] max-w-full h-full bg-gray-900 border-l flex flex-col shadow-2xl"
             style={{
               position: "fixed",
               top: 0,
