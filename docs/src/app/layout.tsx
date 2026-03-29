@@ -4,7 +4,7 @@ import { Layout } from "nextra-theme-docs";
 import type { ReactNode } from "react";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
-import { ChatFAB } from "./components/ChatFAB";
+import { Chat } from "./components/Chat";
 
 import "../styles/globals.css";
 
@@ -19,7 +19,7 @@ export default async function RootLayout({
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head />
       <body>
-        <ChatFAB />
+        <Chat />
         <Layout
           themeSwitch={{
             dark: "Dark",

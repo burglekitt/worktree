@@ -26,7 +26,7 @@
     "editor.formatOnSaveMode": "file",
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.words": ["burglekitt", "oclif", "worktree"],
+  "cSpell.words": ["burglekitt", "oclif", "worktree", "openrouter"],
   "editor.codeActionsOnSave": {
     "source.organizeImports.biome": "explicit",
     "source.fixAll.biome": "explicit"

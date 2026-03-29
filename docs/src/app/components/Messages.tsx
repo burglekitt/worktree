@@ -5,9 +5,9 @@ import { useLayoutEffect, useRef } from "react";
 import { AssistantMessage } from "./AssistantMessage";
 import { UserMessage } from "./UserMessage";
 
-type MessagesProps = {
+interface MessagesProps {
   messages: UIMessage[];
-};
+}
 
 export function Messages({ messages }: MessagesProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);

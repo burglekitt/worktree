@@ -3,11 +3,11 @@ import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
 import { ChatForm } from "./ChatForm";
 import { Messages } from "./Messages";
 
-type Props = {
+interface ChatPanelProps {
   model?: string;
-};
+}
 
-export function ChatPanel({ model = "openai/gpt-5.2" }: Props) {
+export function ChatPanel({ model = "openai/gpt-5.1-mini" }: ChatPanelProps) {
   const connectionUrl = `/api/openrouter${
     model ? `?model=${encodeURIComponent(model)}` : ""
   }`;
@@ -17,6 +17,7 @@ export function ChatPanel({ model = "openai/gpt-5.2" }: Props) {
   });
 
   async function handleSubmit(message: string) {
+    console.log("submit");
     if (!message.trim() || isLoading) return;
     await sendMessage(message);
   }

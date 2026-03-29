@@ -1,24 +1,16 @@
 import { Input } from "@base-ui/react";
 import { forwardRef } from "react";
-
-// TODO This is bad
-type FieldShape = {
-  name: string;
-  state: { value?: unknown; meta?: { isPending?: boolean } };
-  handleBlur: () => void;
-  handleChange: (v: unknown) => void;
-};
+import { useField } from "./form/FormContext";
 
 interface ChatInputProps {
-  field: unknown;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
 }
 
 export const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
-  function ChatInput({ field, placeholder, className, disabled }, ref) {
-    const f = field as FieldShape;
+  function ChatInput({ placeholder, className, disabled }, ref) {
+    const f = useField();
 
     return (
       <Input

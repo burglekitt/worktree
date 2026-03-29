@@ -1,10 +1,8 @@
 import { Select } from "@base-ui/react/select";
 import {
-  ChatBubbleBottomCenterIcon,
   CheckIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 

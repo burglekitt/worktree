@@ -2,42 +2,67 @@
 
 import { Button } from "@base-ui/react";
 import { Drawer } from "@base-ui/react/drawer";
-import {
-  ChatBubbleBottomCenterIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 // Popover.Close is not exported; use a regular button to close
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { cn } from "../../utils";
+import { useChatContext } from "./ChatContext";
 import { ChatModelSelect } from "./ChatModelSelect";
 import { ChatPanel } from "./ChatPanel";
-import { cn } from "./cn";
+import { ChatTrigger } from "./ChatTrigger";
 
 const FREE_MODELS = [
   { label: "GPT-5 mini (free)", value: "openai/gpt-5.1-mini" },
-  { label: "GPT-4.1 (free)", value: "openai/gpt-4.1" },
   { label: "GPT-3.5 (free)", value: "openai/gpt-3.5-turbo" },
-  { label: "Mistral Small (free)", value: "mistral-small" },
-  { label: "Llama Mini (free)", value: "llama-mini" },
-  // Add more free models here as desired
 ];
 
-export function ChatFAB() {
-  const [open, setOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+export function ChatDrawer() {
+  const {
+    isDrawerOpen,
+    setIsDrawerOpen,
+    isDrawerClosing,
+    setIsDrawerClosing,
+    entered,
+    sessionKey,
+    setSessionKey,
+    setEntered,
+    model,
+    setModel,
+  } = useChatContext();
+
   const popupRef = useRef<HTMLDivElement | null>(null);
   const backdropRef = useRef<HTMLDivElement | null>(null);
-  const [entered, setEntered] = useState(false);
-  const [model, setModel] = useState(() => {
-    try {
-      return localStorage.getItem("docs_chat_model") || FREE_MODELS[0].value;
-    } catch {
-      return FREE_MODELS[0].value;
+  const modelOptions = useMemo(() => FREE_MODELS, []);
+
+  const updateSessionKey = useCallback(() => {
+    // bump key to remount ChatPanel (clears internal useChat state)
+    setSessionKey((k: number) => k + 1);
+  }, [setSessionKey]);
+
+  const handleOpen = useCallback(() => {
+    setIsDrawerClosing(false);
+    setIsDrawerOpen(true);
+    setEntered(false);
+  }, [setIsDrawerOpen, setIsDrawerClosing, setEntered]);
+
+  const handleClose = useCallback(() => {
+    // trigger CSS exit animation then unmount
+    setIsDrawerClosing(true);
+    setEntered(false);
+    setTimeout(() => {
+      setIsDrawerOpen(false);
+      setIsDrawerClosing(false);
+    }, 480);
+  }, [setIsDrawerOpen, setIsDrawerClosing, setEntered]);
+
+  function handleModelChange(value: string | null): void {
+    if (value) {
+      setModel(value);
+      updateSessionKey();
     }
-  });
-  console.log("Selected model:", model);
+  }
 
-  const [sessionKey, setSessionKey] = useState(0);
-
+  // Persist selected model to localStorage so it sticks across sessions.
   useEffect(() => {
     try {
       localStorage.setItem("docs_chat_model", model);
@@ -46,55 +71,25 @@ export function ChatFAB() {
     }
   }, [model]);
 
-  const modelOptions = useMemo(() => FREE_MODELS, []);
-
-  const handleClear = () => {
-    // bump key to remount ChatPanel (clears internal useChat state)
-    setSessionKey((k) => k + 1);
-  };
-
-  const handleOpen = useCallback(() => {
-    setIsClosing(false);
-    setOpen(true);
-    setEntered(false);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    // trigger CSS exit animation then unmount
-    setIsClosing(true);
-    setEntered(false);
-    setTimeout(() => {
-      setOpen(false);
-      setIsClosing(false);
-    }, 480);
-  }, []);
-
-  function handleModelChange(value: string | null): void {
-    if (value) {
-      setModel(value);
-      handleClear();
-    }
-  }
-
   // keyboard: open chat with Ctrl+K for convenience
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         // toggle using our handler so animations run
-        if (open) handleClose();
+        if (isDrawerOpen) handleClose();
         else handleOpen();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, handleClose, handleOpen]);
+  }, [isDrawerOpen, handleClose, handleOpen]);
 
   // Drive entrance using a short two-phase mount: render offscreen then set
   // `entered` on the next frame so CSS transition runs. This avoids the
   // instant pop when the element first mounts.
   useEffect(() => {
-    if (!open) {
+    if (!isDrawerOpen) {
       setEntered(false);
       return;
     }
@@ -102,26 +97,23 @@ export function ChatFAB() {
     setEntered(false);
     const raf = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(raf);
-  }, [open]);
+  }, [isDrawerOpen, setEntered]);
 
   return (
     <Drawer.Root
-      open={open}
+      open={isDrawerOpen}
       onOpenChange={(v) => (v ? handleOpen() : handleClose())}
       swipeDirection="right"
     >
-      <Drawer.Trigger
-        onClick={() => handleOpen()}
-        className="fixed right-6 bottom-6 z-[9999] w-16 h-16 rounded-full flex items-center justify-center bg-blue-500 hover:bg-blue-600 active:bg-blue-700 focus:ring focus:ring-blue-300 border-2 border-cyan-400 dark:border-cyan-500"
-      >
-        <ChatBubbleBottomCenterIcon className="w-7 h-7 text-white" />
-      </Drawer.Trigger>
+      <ChatTrigger />
 
       <Drawer.Portal>
         <Drawer.Backdrop
           ref={backdropRef}
           className={`bg-black/30 fixed inset-0 z-[9998] transition-opacity duration-300 ${
-            open || isClosing ? "opacity-100" : "opacity-0 pointer-events-none"
+            isDrawerOpen || isDrawerClosing
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
           }`}
         />
         <Drawer.Viewport className="z-50">
@@ -151,7 +143,9 @@ export function ChatFAB() {
               "transition-transform duration-500 ease-in-out",
 
               // State: toggle translate for entrance/exit
-              entered && !isClosing ? "translate-x-0" : "translate-x-full",
+              entered && !isDrawerClosing
+                ? "translate-x-0"
+                : "translate-x-full",
             )}
           >
             <div className="flex items-center justify-between p-4 border-b">
@@ -166,7 +160,7 @@ export function ChatFAB() {
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={handleClear}
+                  onClick={updateSessionKey}
                   className="px-2 py-1 text-sm border rounded bg-gray-100 dark:bg-slate-800"
                   aria-label="Clear conversation"
                 >
@@ -175,7 +169,7 @@ export function ChatFAB() {
                 <Drawer.Close
                   aria-label="Close chat"
                   className="px-2 py-1 rounded text-sm border"
-                  onClick={() => handleClose()}
+                  onClick={handleClose}
                 >
                   <XMarkIcon style={{ width: 16, height: 16 }} />
                 </Drawer.Close>
