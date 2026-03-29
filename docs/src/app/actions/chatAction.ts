@@ -19,9 +19,10 @@ const serverValidate = createServerValidate({
   },
 });
 
-export default async function chatAction(prev: unknown, formData: FormData) {
+export async function chatAction(prev: unknown, formData: FormData) {
   try {
     const validated = await serverValidate(formData);
+    console.log("Validated server-side:", validated);
     // validated contains typed values; you can perform server-side
     // logging/persistence here if desired. For chat, we only validate.
     return;

@@ -1,17 +1,9 @@
 import { createContext, useContext, useState } from "react";
+import { FREE_MODELS } from "./constants";
 
 // need a react context and provider to store shared actions
 
 export const ChatContext = createContext<any>(null);
-
-const FREE_MODELS = [
-  { label: "GPT-5 mini (free)", value: "openai/gpt-5.1-mini" },
-  { label: "GPT-4.1 (free)", value: "openai/gpt-4.1" },
-  { label: "GPT-3.5 (free)", value: "openai/gpt-3.5-turbo" },
-  { label: "Mistral Small (free)", value: "mistral-small" },
-  { label: "Llama Mini (free)", value: "llama-mini" },
-  // Add more free models here as desired
-];
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

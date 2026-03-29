@@ -11,6 +11,7 @@ interface MessageProps {
   partTextClass?: string;
 }
 
+// TODO - add status code for proper error messaging, a 200 with no messages shouldn't throw error
 export function Message({
   message,
   title,
@@ -98,7 +99,7 @@ export function Message({
             <strong className="mr-1">No response:</strong> The assistant did not
             return any content. This may indicate a 404 or server error from the
             OpenRouter proxy. Try selecting a different model or checking the
-            WORKTREE_OPENROUTER_API_KEY and server logs.
+            OPENROUTER_API_KEY and server logs.
           </div>
         )}
       </div>

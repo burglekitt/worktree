@@ -10,11 +10,7 @@ import { useChatContext } from "./ChatContext";
 import { ChatModelSelect } from "./ChatModelSelect";
 import { ChatPanel } from "./ChatPanel";
 import { ChatTrigger } from "./ChatTrigger";
-
-const FREE_MODELS = [
-  { label: "GPT-5 mini (free)", value: "openai/gpt-5.1-mini" },
-  { label: "GPT-3.5 (free)", value: "openai/gpt-3.5-turbo" },
-];
+import { FREE_MODELS } from "./constants";
 
 export function ChatDrawer() {
   const {

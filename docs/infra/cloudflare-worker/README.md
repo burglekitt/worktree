@@ -10,7 +10,7 @@ Files
 
 Secrets to set
 
-- `WORKTREE_OPENROUTER_API_KEY` — your OpenRouter API key (already in your GitHub secrets).
+- `OPENROUTER_API_KEY` — your OpenRouter API key (already in your GitHub secrets).
 - `CF_ACCOUNT_ID` and `CF_API_TOKEN` (if you plan to use `wrangler` / GitHub Actions to publish the worker).
 
 Quick deploy (local wrangler)
@@ -20,7 +20,7 @@ Quick deploy (local wrangler)
 3. Set the secret for the worker:
 
 ```bash
-wrangler secret put WORKTREE_OPENROUTER_API_KEY --name WORKTREE_OPENROUTER_API_KEY
+wrangler secret put OPENROUTER_API_KEY --name OPENROUTER_API_KEY
 ```
 
 4. Publish the worker (assumes a `wrangler.toml` configured):
@@ -31,7 +31,7 @@ wrangler publish docs/infra/cloudflare-worker/worker.js --name worktree-openrout
 
 GitHub Actions
 
-You can add a workflow to publish the worker on push or via `workflow_dispatch`. The workflow needs `CF_ACCOUNT_ID` and `CF_API_TOKEN` and should also set `WORKTREE_OPENROUTER_API_KEY` for the worker.
+You can add a workflow to publish the worker on push or via `workflow_dispatch`. The workflow needs `CF_ACCOUNT_ID` and `CF_API_TOKEN` and should also set `OPENROUTER_API_KEY` for the worker.
 
 Client configuration
 
@@ -39,6 +39,6 @@ After deploying the worker, set your docs client to call the worker URL (e.g. `h
 
 Security notes
 
-- Keep `WORKTREE_OPENROUTER_API_KEY` secret in the provider's secret store.
+- Keep `OPENROUTER_API_KEY` secret in the provider's secret store.
 - Update `ALLOWED_MODELS` in `worker.js` to match the exact models your OpenRouter API key can access.
 - Consider additional rate-limiting and authentication if the proxy is public.

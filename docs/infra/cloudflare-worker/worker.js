@@ -3,18 +3,13 @@ Cloudflare Worker: OpenRouter proxy
 
 Security notes:
 - Store your OpenRouter API key in the worker environment variable
-  `WORKTREE_OPENROUTER_API_KEY` (set via wrangler secret or Cloudflare dashboard).
+  `OPENROUTER_API_KEY` (set via wrangler secret or Cloudflare dashboard).
 - Keep the allowed model list small to avoid abuse.
 
 This worker accepts POST requests with JSON body: { messages: [...], model?: string }
 and forwards to OpenRouter's HTTP chat endpoint, returning the proxied status and body.
 */
-
-const ALLOWED_MODELS = [
-  // POC / example models — update to the exact model names available to your key
-  "openai/gpt-5.1-mini",
-  "openai/gpt-5.2",
-];
+import { ALLOWED_MODELS } from "../../src/app/components/constants";
 
 async function handleRequest(request) {
   if (request.method !== "POST") {
@@ -45,7 +40,7 @@ async function handleRequest(request) {
   const chosenModel =
     model ||
     new URL(request.url).searchParams.get("model") ||
-    "openai/gpt-5.1-mini";
+    ALLOWED_MODELS[0]?.value;
   if (!ALLOWED_MODELS.includes(chosenModel)) {
     return new Response(
       JSON.stringify({ error: `Model not allowed: ${chosenModel}` }),
@@ -53,13 +48,10 @@ async function handleRequest(request) {
     );
   }
 
-  const key =
-    WORKER_OPENROUTER_API_KEY ||
-    WORKTREE_OPENROUTER_API_KEY ||
-    process.env?.WORKTREE_OPENROUTER_API_KEY;
+  const key = OPENROUTER_API_KEY || process.env?.OPENROUTER_API_KEY;
   if (!key) {
     return new Response(
-      JSON.stringify({ error: "WORKTREE_OPENROUTER_API_KEY not configured" }),
+      JSON.stringify({ error: "OPENROUTER_API_KEY not configured" }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }

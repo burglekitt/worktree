@@ -30,10 +30,10 @@ jobs:
           pnpm format:check || echo 'format check not configured'
           pnpm lint || echo 'lint not configured'
 
-      - name: Secret scan - detect accidental WORKTREE_OPENROUTER_API_KEY
+      - name: Secret scan - detect accidental OPENROUTER_API_KEY
         run: |
-          if git grep -n "WORKTREE_OPENROUTER_API_KEY" >/dev/null 2>&1; then
-            echo "ERROR: WORKTREE_OPENROUTER_API_KEY found in repository; remove it and rotate the key."
-            git --no-pager grep -n "WORKTREE_OPENROUTER_API_KEY"
+          if git grep -n "OPENROUTER_API_KEY" >/dev/null 2>&1; then
+            echo "ERROR: OPENROUTER_API_KEY found in repository; remove it and rotate the key."
+            git --no-pager grep -n "OPENROUTER_API_KEY"
             exit 1
           fi

@@ -1,49 +1,42 @@
 import { chat, toServerSentEventsResponse } from "@tanstack/ai";
 import { openRouterText } from "@tanstack/ai-openrouter";
+import { ALLOWED_MODELS } from "../../components/constants";
 
 export async function POST(request: Request) {
-  // get model from ?model= query param, default to gpt-5.2
   const { searchParams } = new URL(request.url);
-  const model = searchParams.get("model") || "gpt-5.2";
+  const model = searchParams.get("model") || ALLOWED_MODELS[0];
 
-  if (!process.env.WORKTREE_OPENROUTER_API_KEY) {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) {
     return new Response(
-      JSON.stringify({
-        error: "OPENAI_API_KEY not configured",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
+      JSON.stringify({ error: "OPENROUTER_API_KEY not configured" }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
 
-  const {
-    messages,
-    data: { conversationId },
-  } = await request.json();
+  const { messages, conversationId } = await request.json();
 
   try {
-    // Create a streaming chat response
-    // get model passed in as rg and chose
-
     const stream = chat({
-      adapter: openRouterText(model as string as any),
+      adapter: openRouterText(model, {
+        apiKey: key,
+      }),
       messages,
       conversationId,
+      systemPrompts: [
+        "You are a helpful assistant for our docs. Only answer questions about our codebase.",
+      ],
     });
-
-    // Convert stream to HTTP response
     return toServerSentEventsResponse(stream);
   } catch (error) {
+    console.error("OpenRouter error:", error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "An error occurred",
       }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
+      { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
 }
+
+export const runtime = "edge";

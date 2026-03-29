@@ -73,7 +73,7 @@ applyTo:
 ```
 
 Suggested behavior:
-- Detect code that imports `@openrouter/sdk` or references `WORKTREE_OPENROUTER_API_KEY` in `docs/`.
+- Detect code that imports `@openrouter/sdk` or references `OPENROUTER_API_KEY` in `docs/`.
 - If detected, suggest a serverless proxy pattern and provide a minimal serverless function example (Vercel, Netlify, Cloudflare) and frontend fetch wrapper.
 
 3) CLI maintenance helper

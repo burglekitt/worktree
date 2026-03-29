@@ -1,23 +1,21 @@
 "use client";
 import { fetchServerSentEvents, useChat } from "@tanstack/ai-react";
 import { ChatForm } from "./ChatForm";
+import { FREE_MODELS } from "./constants";
 import { Messages } from "./Messages";
 
 interface ChatPanelProps {
   model?: string;
 }
 
-export function ChatPanel({ model = "openai/gpt-5.1-mini" }: ChatPanelProps) {
-  const connectionUrl = `/api/openrouter${
-    model ? `?model=${encodeURIComponent(model)}` : ""
-  }`;
+export function ChatPanel({ model = FREE_MODELS[0].value }: ChatPanelProps) {
+  const connectionUrl = `/api/openrouter${model ? `?model=${encodeURIComponent(model)}` : ""}`;
 
   const { messages, sendMessage, isLoading } = useChat({
     connection: fetchServerSentEvents(connectionUrl),
   });
 
   async function handleSubmit(message: string) {
-    console.log("submit");
     if (!message.trim() || isLoading) return;
     await sendMessage(message);
   }

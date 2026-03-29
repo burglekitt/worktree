@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-form-nextjs";
 import { useStore } from "@tanstack/react-store";
 import { useActionState, useEffect, useRef } from "react";
-import someAction from "../actions/chatAction";
+import { chatAction } from "../actions/chatAction";
 import { ChatInput } from "./ChatInput";
 import { ChatSubmitButton } from "./ChatSubmitButton";
 import { FormField, FormProvider } from "./form/FormContext";
@@ -22,7 +22,7 @@ export function ChatForm({ onSubmit, disabled }: ChatFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Keep server action state in sync with the client form
-  const [state, action] = useActionState(someAction, initialFormState as any);
+  const [state, action] = useActionState(chatAction, initialFormState as any);
 
   const form = useForm({
     // base options
