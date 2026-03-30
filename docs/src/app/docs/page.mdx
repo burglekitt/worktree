@@ -3,7 +3,8 @@ title: Documentation
 asIndexPage: true
 ---
 
-import { cliVersion } from "../../lib/site-meta";
+import { cliVersion, maintainers } from "../../lib/site-meta";
+import { MaintainersList } from "../../components/MaintainersList";
 
 # Documentation
 
@@ -31,5 +32,4 @@ Current docs target: **v{cliVersion}**
 
 ## Maintainers
 
-- [Craig Curtis](https://github.com/craigcurtis)
-- [Burglekitt](https://github.com/burglekitt)
+<MaintainersList maintainers={maintainers} />
