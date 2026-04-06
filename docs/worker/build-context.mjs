@@ -10,14 +10,14 @@
  * Run: pnpm --filter docs worker:build-context
  */
 
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const docsRoot = join(__dirname, "..");
 const repoRoot = join(docsRoot, "..");
-const outFile = join(docsRoot, "infra/cloudflare-worker/docs-context.ts");
+const outFile = join(__dirname, "docs-context.ts");
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -51,14 +51,15 @@ function stripMdx(raw) {
   );
 }
 
-function readMdxFiles(pattern, rootLabel) {
-  const files = globSync(pattern, { cwd: docsRoot }).sort();
+function readMdxFiles(subdir, rootLabel) {
+  const absDir = join(docsRoot, subdir);
+  const files = findFiles(absDir, ".mdx");
   const sections = [];
   for (const f of files) {
-    const raw = readFileSync(join(docsRoot, f), "utf8");
+    const raw = readFileSync(f, "utf8");
     const text = stripMdx(raw);
     if (text.length < 10) continue;
-    const label = relative(docsRoot, join(docsRoot, f)).replace(/\\/g, "/");
+    const label = relative(docsRoot, f).replace(/\\/g, "/");
     sections.push(`### ${rootLabel}: ${label}\n\n${text}`);
   }
   return sections.join("\n\n---\n\n");
@@ -66,7 +67,7 @@ function readMdxFiles(pattern, rootLabel) {
 
 // ── Load docs MDX ─────────────────────────────────────────────────────────────
 
-const docsContent = readMdxFiles("src/app/docs/**/*.mdx", "Docs");
+const docsContent = readMdxFiles("src/app/docs", "Docs");
 
 // ── Load SKILL.md from skills/core (TanStack Intent canonical location) ───────
 

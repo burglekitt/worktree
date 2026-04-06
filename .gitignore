@@ -8,14 +8,15 @@ oclif.manifest.json
 **/_pagefind/
 .next
 docs/out/
-docs/.vercel/
 docs/pnpm-lock.yaml
 **/.env.local
 
 # Cloudflare Worker build outputs (generated, not source)
-docs/infra/cloudflare-worker/dist/
-docs/infra/cloudflare-worker/.wrangler/
-# Generated at build time by docs/scripts/build-context.mjs
-docs/infra/cloudflare-worker/docs-context.ts
+docs/worker/dist/
+.wrangler
+
+# Generated at build time by docs/worker/build-context.mjs
+docs/worker/docs-context.ts
 # Wrangler local dev secrets (populated by worker:setup-dev-vars from .env.local)
-docs/infra/cloudflare-worker/.dev.vars
+docs/worker/.dev.vars
+

@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const docsRoot = join(__dirname, "..");
 const envLocalPath = join(docsRoot, ".env.local");
-const devVarsPath = join(docsRoot, "infra/cloudflare-worker/.dev.vars");
+const devVarsPath = join(__dirname, ".dev.vars");
 
 if (!existsSync(envLocalPath)) {
   console.warn(
@@ -43,6 +43,4 @@ if (!match) {
 
 const apiKey = match[1].trim().replace(/\s*#.*$/, ""); // strip inline comment
 writeFileSync(devVarsPath, `GEMINI_API_KEY=${apiKey}\n`, "utf8");
-console.log(
-  "[setup-dev-vars] Wrote GEMINI_API_KEY to infra/cloudflare-worker/.dev.vars",
-);
+console.log("[setup-dev-vars] Wrote GEMINI_API_KEY to worker/.dev.vars");
