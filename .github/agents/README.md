@@ -1,6 +1,6 @@
 # Agent Manifests — How to use these files later
 
-This folder contains repository-level agent manifests (`*.agent.md`) that document detection rules, remediation guidance, and safe automation policies for repository checks (format/lint, OpenRouter safety, etc.). These files are documentation-first: they do not run by themselves.
+This folder contains repository-level agent manifests (`*.agent.md`) that document detection rules, remediation guidance, and safe automation policies for repository checks (format/lint, Tanstack AI chat safety, etc.). These files are documentation-first: they do not run by themselves.
 
 When/why these are useful
 - Provide on-repo policy and remediation guidance for contributors and reviewers.

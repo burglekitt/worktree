@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  initialFormState,
-  mergeForm,
-  useForm,
-  useTransform,
-} from "@tanstack/react-form-nextjs";
-import { useStore } from "@tanstack/react-store";
-import { useActionState, useEffect, useRef } from "react";
-import { chatAction } from "../actions/chatAction";
+import { useForm } from "@tanstack/react-form";
+import { useEffect, useRef } from "react";
 import { ChatInput } from "./ChatInput";
 import { ChatSubmitButton } from "./ChatSubmitButton";
 import { FormField, FormProvider } from "./form/FormContext";
@@ -21,20 +14,24 @@ interface ChatFormProps {
 export function ChatForm({ onSubmit, disabled }: ChatFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Keep server action state in sync with the client form
-  const [state, action] = useActionState(chatAction, initialFormState as any);
-
   const form = useForm({
-    // base options
     defaultValues: { message: "" },
-    transform: useTransform((base) => mergeForm(base, state ?? {}), [state]),
-  } as any);
+    validators: {
+      onSubmit: ({ value }) => {
+        if (!value.message || value.message.trim().length === 0) {
+          return "Message is required";
+        }
+      },
+    },
+    onSubmit: async ({ value }) => {
+      const msg = value.message.trim();
+      if (!msg) return;
+      await onSubmit(msg);
+      form.reset();
+      setTimeout(() => inputRef.current?.focus(), 0);
+    },
+  });
 
-  // subscribe to values and errors
-  const values = useStore(form.store, (s) => s.values as any);
-  const errors = useStore(form.store, (s) => s.errors as any);
-
-  // Focus the input when the form mounts (allow entrance animation to start).
   useEffect(() => {
     const t = setTimeout(() => {
       inputRef.current?.focus();
@@ -42,29 +39,13 @@ export function ChatForm({ onSubmit, disabled }: ChatFormProps) {
     return () => clearTimeout(t);
   }, []);
 
-  async function handleSubmit(e?: React.FormEvent) {
-    e?.preventDefault();
-    // Submit to the server action which performs server-side validation.
-    await form.handleSubmit?.();
-
-    // If server returned no errors, perform client-side send
-    if (!errors || Object.keys(errors).length === 0) {
-      const msg = String(values?.message ?? "").trim();
-      if (msg) {
-        await onSubmit(msg);
-        // reset the form client-side
-        form.reset?.();
-        // focus the input after DOM updates
-        setTimeout(() => inputRef.current?.focus(), 0);
-      }
-    }
-  }
-
   return (
     <FormProvider form={form}>
       <form
-        action={action as never}
-        onSubmit={handleSubmit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
         className="p-4 border-t border-gray-200 dark:border-gray-800"
       >
         <div className="flex gap-2">

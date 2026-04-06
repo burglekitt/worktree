@@ -11,7 +11,6 @@ interface ChatInputProps {
 export const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
   function ChatInput({ placeholder, className, disabled }, ref) {
     const f = useField();
-
     return (
       <Input
         ref={ref}
@@ -29,5 +28,4 @@ export const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
     );
   },
 );
-
 ChatInput.displayName = "ChatInput";

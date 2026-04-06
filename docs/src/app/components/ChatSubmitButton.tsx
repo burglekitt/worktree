@@ -12,9 +12,7 @@ export function ChatSubmitButton({ disabled }: ChatSubmitButtonProps) {
   return (
     <Button
       type="submit"
-      disabled={
-        !!(Boolean(disabled) || isSubmitting || !String(value ?? "").trim())
-      }
+      disabled={!!(disabled || isSubmitting || !String(value ?? "").trim())}
       className="px-6 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 ml-2"
     >
       {isSubmitting ? "..." : "Send"}

@@ -1,0 +1,12 @@
+name = "worktree-gemini-proxy"
+main = "dist/worker.js"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# account_id is auto-detected from wrangler login; set here if needed
+# account_id = "your-account-id"
+
+[vars]
+# Non-secret env vars go here
+
+# Secrets are set via: pnpm wrangler secret put GEMINI_API_KEY

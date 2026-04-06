@@ -15,7 +15,6 @@ Purpose: document recommended agent workflows, repository layout, and examples f
   - Uses [`pnpm`](https://pnpm.io/workspaces) workspace and has its own `package.json` in `docs/`.
   - Uses [Base UI](https://base-ui.com/react/overview/quick-start) for UI library
   - UI and examples live under `docs/src`, docs content under `docs/src/app`.
-  - Adding OpenRouter [OpenRouter docs](https://openrouter.ai/docs/api/reference/) and [OpenClaw](https://docs.openclaw.ai/) for chat functionality with the Worktree docs app
 
 Separation of concerns
 
@@ -62,21 +61,8 @@ description: "Review changed files and suggest or apply small fixes: formatting,
 
 Notes: avoid making large behavioral changes without human approval; provide a summary of all modifications and a commit message suggestion.
 
-2) Docs: Add/validate examples that use OpenRouter safely
 
-Purpose: guide contributors to implement client↔server patterns safely (docs-only code should not contain API keys).
-
-ApplyTo:
-```
-applyTo:
-  - "docs/**"
-```
-
-Suggested behavior:
-- Detect code that imports `@openrouter/sdk` or references `OPENROUTER_API_KEY` in `docs/`.
-- If detected, suggest a serverless proxy pattern and provide a minimal serverless function example (Vercel, Netlify, Cloudflare) and frontend fetch wrapper.
-
-3) CLI maintenance helper
+2) CLI maintenance helper
 
 Purpose: help generate new `oclif` commands, run `pnpm build`, and ensure `bin/` scripts are executable.
 
@@ -118,7 +104,7 @@ Instructions:
 ## Security notes for agents
 
 - Never embed secrets or API keys in prompt/instruction files. If an agent needs to interact with external systems that require secrets, document where to set them (CI secrets, serverless platform env vars) and keep those values out of the repo.
-- For docs that demonstrate third-party services (OpenRouter, GitHub integrations), prefer sample code that uses a backend proxy and environment variables.
+
 
 ## How to add a new agent
 
@@ -129,7 +115,7 @@ Instructions:
 
 ## Further Reference
 
-1. [OpenAPI Specification - JSON:](https://openrouter.ai/openapi.json)
+1
 
 ## Contact / Maintainers
 

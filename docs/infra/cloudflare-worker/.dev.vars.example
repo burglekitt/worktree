@@ -1,0 +1,7 @@
+# docs/infra/cloudflare-worker/.dev.vars.example
+# Copy this file to .dev.vars and fill in your values.
+# .dev.vars is gitignored — never commit actual secrets.
+# It is read automatically by `wrangler dev` for local development.
+# Populated automatically by: pnpm run worker:setup-dev-vars (reads from docs/.env.local)
+
+GEMINI_API_KEY=

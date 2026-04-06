@@ -1,8 +1,13 @@
 export const ALLOWED_MODELS = [
-  // POC / example models — update to the exact model names available to your key
-  "openai/gpt-3.5-turbo",
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemma-4-26b-a4b-it",
 ];
 
 export const FREE_MODELS = [
-  { label: "GPT-3.5 turbo (free)", value: "openai/gpt-3.5-turbo" },
+  { label: "Gemini 2.5 Flash (free)", value: "gemini-2.5-flash" },
+  { label: "Gemini 2.5 Flash Lite (free)", value: "gemini-2.5-flash-lite" },
+  { label: "Gemma 4 (open source, free)", value: "gemma-4-26b-a4b-it" },
 ];
+
+export const DEFAULT_MODEL = FREE_MODELS[0].value;

@@ -33,7 +33,6 @@ export function FormField({
   const form = useFormContext();
   const Comp = (form as any).Field as React.ComponentType<any>;
   if (!Comp) {
-    // Fallback: render children directly
     return <>{children}</>;
   }
 

@@ -61,13 +61,13 @@ export function Message({
         }
 
         // Detect common HTTP error text from the helper
-        if (trimmed.includes("OpenRouter HTTP error")) {
+        if (trimmed.includes("Gemini HTTP error")) {
           return (
             <div
               key={idx}
               className={`bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 rounded px-2 py-1 ${partTextClass}`}
             >
-              <strong className="mr-1">OpenRouter error:</strong> {trimmed}
+              <strong className="mr-1">Gemini error:</strong> {trimmed}
             </div>
           );
         }
@@ -98,8 +98,8 @@ export function Message({
           >
             <strong className="mr-1">No response:</strong> The assistant did not
             return any content. This may indicate a 404 or server error from the
-            OpenRouter proxy. Try selecting a different model or checking the
-            OPENROUTER_API_KEY and server logs.
+            Gemini proxy. Try selecting a different model or checking the
+            GEMINI_API_KEY and server logs.
           </div>
         )}
       </div>

@@ -1,44 +1,40 @@
-Cloudflare Worker proxy for OpenRouter
+Cloudflare Worker: Gemini proxy
 
-Overview
+This worker proxies chat requests from the static docs site to Google Gemini using the TanStack Gemini adapter.
 
-This small Cloudflare Worker forwards chat requests from the docs site to OpenRouter's HTTP API while keeping your API key secret.
+Local development
 
-Files
-
-- `worker.js` — the worker source.
-
-Secrets to set
-
-- `OPENROUTER_API_KEY` — your OpenRouter API key (already in your GitHub secrets).
-- `CF_ACCOUNT_ID` and `CF_API_TOKEN` (if you plan to use `wrangler` / GitHub Actions to publish the worker).
-
-Quick deploy (local wrangler)
-
-1. Install wrangler: `npm i -g wrangler`.
-2. Log in or configure: `wrangler login` or set `CF_ACCOUNT_ID` and `CF_API_TOKEN` as env vars.
-3. Set the secret for the worker:
+- Ensure `wrangler` is installed (we include it in devDependencies for `docs`).
+- Put your local Gemini key in `docs/.env.local` as `GEMINI_API_KEY` for local development.
+- Run the worker locally with:
 
 ```bash
-wrangler secret put OPENROUTER_API_KEY --name OPENROUTER_API_KEY
+pnpm --filter docs run worker:dev
 ```
 
-4. Publish the worker (assumes a `wrangler.toml` configured):
+This will start a local worker listening on `http://localhost:8787` by default. Start the docs dev server separately:
 
 ```bash
-wrangler publish docs/infra/cloudflare-worker/worker.js --name worktree-openrouter-proxy
+pnpm --filter docs dev
 ```
 
-GitHub Actions
+Production
 
-You can add a workflow to publish the worker on push or via `workflow_dispatch`. The workflow needs `CF_ACCOUNT_ID` and `CF_API_TOKEN` and should also set `OPENROUTER_API_KEY` for the worker.
+1. Login to Cloudflare: `wrangler login`
+2. Add the secret:
 
-Client configuration
+```bash
+wrangler secret put GEMINI_API_KEY --name GEMINI_API_KEY
+```
 
-After deploying the worker, set your docs client to call the worker URL (e.g. `https://worktree-openrouter-proxy.example.workers.dev/openrouter`) instead of the Next.js `/api/openrouter` route.
+3. Publish:
 
-Security notes
+```bash
+pnpm --filter docs run worker:publish
+```
 
-- Keep `OPENROUTER_API_KEY` secret in the provider's secret store.
-- Update `ALLOWED_MODELS` in `worker.js` to match the exact models your OpenRouter API key can access.
-- Consider additional rate-limiting and authentication if the proxy is public.
+Notes
+
+- Update CORS `Access-Control-Allow-Origin` in `worker.ts` before deploying to production.
+- If `@tanstack/ai-gemini` cannot be bundled for the worker runtime, we will fallback to a direct HTTP proxy implementation.
+# TODO need to rework according to tanstack ai-gemini

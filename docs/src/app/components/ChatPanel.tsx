@@ -9,7 +9,10 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ model = FREE_MODELS[0].value }: ChatPanelProps) {
-  const connectionUrl = `/api/openrouter${model ? `?model=${encodeURIComponent(model)}` : ""}`;
+  // Worker URL (set NEXT_PUBLIC_GEMINI_WORKER_URL for production), fallback to local wrangler dev
+  const base =
+    process.env.NEXT_PUBLIC_GEMINI_WORKER_URL || "http://localhost:8787";
+  const connectionUrl = `${base}/chat${model ? `?model=${encodeURIComponent(model)}` : ""}`;
 
   const { messages, sendMessage, isLoading } = useChat({
     connection: fetchServerSentEvents(connectionUrl),

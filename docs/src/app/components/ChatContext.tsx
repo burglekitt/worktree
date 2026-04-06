@@ -1,7 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { FREE_MODELS } from "./constants";
-
-// need a react context and provider to store shared actions
+import { DEFAULT_MODEL } from "./constants";
 
 export const ChatContext = createContext<any>(null);
 
@@ -12,13 +10,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [sessionKey, setSessionKey] = useState(0);
   const [model, setModel] = useState(() => {
     try {
-      return localStorage.getItem("docs_chat_model") || FREE_MODELS[0].value;
+      return localStorage.getItem("docs_chat_model") || DEFAULT_MODEL;
     } catch {
-      return FREE_MODELS[0].value;
+      return DEFAULT_MODEL;
     }
   });
 
-  // TODO
   return (
     <ChatContext.Provider
       value={{

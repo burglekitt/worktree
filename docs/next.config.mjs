@@ -8,8 +8,7 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(currentDir, "..");
 
 export default withNextra({
-  // output: "export", // !! TODO Static site vs routes for api..
-  // !! TODO may need to fully ditch the route.ts and put everything up in some cloudflare worker
+  output: "export",
   basePath: isProduction ? "/worktree" : "",
   images: {
     unoptimized: true,
