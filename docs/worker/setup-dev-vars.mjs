@@ -3,7 +3,7 @@
  * setup-dev-vars.mjs
  *
  * Reads GEMINI_API_KEY from docs/.env.local and writes it to
- * docs/infra/cloudflare-worker/.dev.vars so that `wrangler dev`
+ * docs/worker/.dev.vars so that `wrangler dev`
  * can access the key during local development.
  *
  * .dev.vars is gitignored — it holds the actual secret.

@@ -1,6 +1,6 @@
 import { Input } from "@base-ui/react";
 import { forwardRef } from "react";
-import { useField } from "./form/FormContext";
+import { useField } from "../form/FormContext";
 
 interface ChatInputProps {
   placeholder?: string;

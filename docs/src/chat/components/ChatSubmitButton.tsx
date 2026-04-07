@@ -1,5 +1,5 @@
 import { Button } from "@base-ui/react";
-import { useFormStore } from "./form/FormContext";
+import { useFormStore } from "../form/FormContext";
 
 interface ChatSubmitButtonProps {
   disabled?: boolean;

@@ -3,7 +3,7 @@
  * build-context.mjs
  *
  * Reads all docs MDX files + the root SKILL.md and generates
- * docs/infra/cloudflare-worker/docs-context.ts which exports a
+ * docs/worker/docs-context.ts which exports a
  * single SYSTEM_PROMPT string that is embedded in the worker at
  * build time.
  *

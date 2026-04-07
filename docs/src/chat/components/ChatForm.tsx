@@ -2,9 +2,9 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useEffect, useRef } from "react";
+import { FormField, FormProvider } from "../form/FormContext";
 import { ChatInput } from "./ChatInput";
 import { ChatSubmitButton } from "./ChatSubmitButton";
-import { FormField, FormProvider } from "./form/FormContext";
 
 interface ChatFormProps {
   onSubmit: (message: string) => Promise<void> | void;

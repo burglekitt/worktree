@@ -6,10 +6,9 @@
   "scripts": {
     "predev": "node ../bin/sync-docs-version.mjs",
     "dev": "next dev --turbopack",
-    "dev:with-worker": "pnpm run worker:build && pnpm run worker:setup-dev-vars && concurrently -k -r -n watch,worker,docs \"pnpm run worker:build:watch\" \"pnpm run worker:dev:serve\" \"pnpm run dev\"",
-    "dev:remote": "next dev --turbopack",
+    "dev:with-worker": "pnpm run worker:build && pnpm run worker:setup-dev-vars && concurrently -k -n watch,worker,docs \"pnpm run worker:build:watch\" \"pnpm run worker:dev\" \"pnpm run dev\"",
+    "worker:dev": "wrangler dev worker/dist/worker.js --local --config worker/wrangler.toml --show-interactive-dev-session=false",
     "worker:build:watch": "cd worker && tsup worker.ts --watch",
-    "worker:dev:serve": "wrangler dev worker/dist/worker.js --local --config worker/wrangler.toml --show-interactive-dev-session=false",
     "worker:setup-dev-vars": "node worker/setup-dev-vars.mjs",
     "worker:build-context": "node worker/build-context.mjs",
     "worker:build": "pnpm run worker:build-context && cd worker && tsup worker.ts",
@@ -29,9 +28,6 @@
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/postcss": "^4.2.2",
     "@tailwindcss/vite": "^4.2.2",
-    "@tanstack/ai": "^0.10.0",
-    "@tanstack/ai-gemini": "^0.8.5",
-    "@tanstack/ai-react": "^0.7.8",
     "@tanstack/react-form": "^1.28.5",
     "@tanstack/react-form-devtools": "^0.2.19",
     "@tanstack/react-query": "^5.95.2",
@@ -42,18 +38,19 @@
     "postcss": "^8.5.8",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.1.9",
+    "concurrently": "^8.2.0",
     "jsdom": "^26.1.0",
     "pagefind": "^1.4.0",
+    "tsup": "^8.0.1",
     "vitest": "^4.0.18",
-    "wrangler": "^4.79.0",
-    "tsup": "^8.0.1"
+    "wrangler": "^4.79.0"
   }
 }

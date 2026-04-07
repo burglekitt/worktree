@@ -3,14 +3,13 @@
 import { Button } from "@base-ui/react";
 import { Drawer } from "@base-ui/react/drawer";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-// Popover.Close is not exported; use a regular button to close
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { cn } from "../../utils";
+import { FREE_MODELS } from "../constants";
 import { useChatContext } from "./ChatContext";
 import { ChatModelSelect } from "./ChatModelSelect";
 import { ChatPanel } from "./ChatPanel";
 import { ChatTrigger } from "./ChatTrigger";
-import { FREE_MODELS } from "./constants";
 
 export function ChatDrawer() {
   const {
@@ -19,21 +18,15 @@ export function ChatDrawer() {
     isDrawerClosing,
     setIsDrawerClosing,
     entered,
-    sessionKey,
-    setSessionKey,
     setEntered,
     model,
     setModel,
+    clearMessages,
   } = useChatContext();
 
   const popupRef = useRef<HTMLDivElement | null>(null);
   const backdropRef = useRef<HTMLDivElement | null>(null);
   const modelOptions = useMemo(() => FREE_MODELS, []);
-
-  const updateSessionKey = useCallback(() => {
-    // bump key to remount ChatPanel (clears internal useChat state)
-    setSessionKey((k: number) => k + 1);
-  }, [setSessionKey]);
 
   const handleOpen = useCallback(() => {
     setIsDrawerClosing(false);
@@ -42,7 +35,6 @@ export function ChatDrawer() {
   }, [setIsDrawerOpen, setIsDrawerClosing, setEntered]);
 
   const handleClose = useCallback(() => {
-    // trigger CSS exit animation then unmount
     setIsDrawerClosing(true);
     setEntered(false);
     setTimeout(() => {
@@ -54,7 +46,7 @@ export function ChatDrawer() {
   function handleModelChange(value: string | null): void {
     if (value) {
       setModel(value);
-      updateSessionKey();
+      clearMessages();
     }
   }
 
@@ -72,7 +64,6 @@ export function ChatDrawer() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        // toggle using our handler so animations run
         if (isDrawerOpen) handleClose();
         else handleOpen();
       }
@@ -81,15 +72,12 @@ export function ChatDrawer() {
     return () => window.removeEventListener("keydown", onKey);
   }, [isDrawerOpen, handleClose, handleOpen]);
 
-  // Drive entrance using a short two-phase mount: render offscreen then set
-  // `entered` on the next frame so CSS transition runs. This avoids the
-  // instant pop when the element first mounts.
+  // Drive entrance animation via two-phase mount.
   useEffect(() => {
     if (!isDrawerOpen) {
       setEntered(false);
       return;
     }
-    // Ensure we start off-screen, then flip to entered on next frame.
     setEntered(false);
     const raf = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(raf);
@@ -116,29 +104,16 @@ export function ChatDrawer() {
           <Drawer.Popup
             ref={popupRef}
             className={cn(
-              // Positioning & painting hints
               "fixed top-0 bottom-0 right-0",
               "will-change-transform",
-
-              // Stacking & sizing
               "z-[9999]",
               "w-[400px] max-w-full h-full",
-
-              // Performance / rendering
               "transform-gpu",
               "webkitbackface-visibility-hidden",
-
-              // Visuals
               "bg-white dark:bg-slate-900",
               "border-l border-gray-200 dark:border-gray-800",
-
-              // Layout
               "flex flex-col shadow-2xl text-gray-900 dark:text-gray-100",
-
-              // Animation
               "transition-transform duration-500 ease-in-out",
-
-              // State: toggle translate for entrance/exit
               entered && !isDrawerClosing
                 ? "translate-x-0"
                 : "translate-x-full",
@@ -156,7 +131,7 @@ export function ChatDrawer() {
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={updateSessionKey}
+                  onClick={clearMessages}
                   className="px-2 py-1 text-sm border rounded bg-gray-100 dark:bg-slate-800"
                   aria-label="Clear conversation"
                 >
@@ -172,7 +147,7 @@ export function ChatDrawer() {
               </div>
             </div>
 
-            <ChatPanel key={sessionKey} model={model} />
+            <ChatPanel />
           </Drawer.Popup>
         </Drawer.Viewport>
       </Drawer.Portal>

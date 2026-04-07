@@ -2,9 +2,9 @@ import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import { Layout } from "nextra-theme-docs";
 import type { ReactNode } from "react";
+import { Chat } from "../chat/components/Chat";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
-import { Chat } from "./components/Chat";
 
 import "../styles/globals.css";
 
