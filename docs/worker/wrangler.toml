@@ -2,6 +2,8 @@ name = "worktree-gemini-proxy"
 main = "dist/worker.js"
 compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+# Live URL: https://worktree-gemini-proxy.burglekitt.workers.dev
 
 # Find your account ID: wrangler whoami  OR  https://dash.cloudflare.com → right sidebar.
 # Uncomment and fill in before first deploy:

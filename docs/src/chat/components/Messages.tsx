@@ -1,8 +1,8 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
-import { AssistantMessage } from "../../app/components/AssistantMessage";
 import type { ChatMessage } from "../types";
+import { AssistantMessage } from "./AssistantMessage";
 import { UserMessage } from "./UserMessage";
 
 interface MessagesProps {

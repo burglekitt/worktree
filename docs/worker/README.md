@@ -15,7 +15,7 @@ Browser (GitHub Pages)  →  POST https://<worker>.workers.dev?model=...
                         SSE stream piped back to browser
 ```
 
-The static bundle bakes in `NEXT_PUBLIC_GEMINI_WORKER_URL` at build time.
+The static bundle bakes in `GEMINI_WORKER_URL` at build time.
 That variable is set as a GitHub repo **variable** (not a secret) and injected
 by the `docs-deploy.yml` workflow.
 
@@ -41,9 +41,13 @@ pnpm --filter docs run dev
 ```
 
 The Next.js app defaults to `http://localhost:8787` when
-`NEXT_PUBLIC_GEMINI_WORKER_URL` is not set locally.
+`GEMINI_WORKER_URL` is not set locally.
 
 ## First-time Cloudflare deployment
+
+> **Done for this project.** The worker is live at
+> `https://worktree-gemini-proxy.burglekitt.workers.dev`.
+> Steps below are for reference or if you need to redo from scratch.
 
 ### 1. Find your Cloudflare Account ID
 
@@ -51,18 +55,30 @@ The Next.js app defaults to `http://localhost:8787` when
 npx wrangler whoami
 ```
 
-Or open [dash.cloudflare.com](https://dash.cloudflare.com) → right sidebar
-under your account name.
+Or open [dash.cloudflare.com](https://dash.cloudflare.com) → right sidebar.
 
-### 2. Add it to `wrangler.toml`
-
-Uncomment and fill in `account_id` in `docs/worker/wrangler.toml`.
-
-### 3. Log in to Cloudflare
+### 2. Export credentials for your shell session
 
 ```bash
-npx wrangler login
+export CLOUDFLARE_API_TOKEN="<your token>"
+export CLOUDFLARE_ACCOUNT_ID="<your account id>"
 ```
+
+### 3. Set the Gemini API key secret on the worker *(one-time)*
+
+Do this **before** deploying if the worker doesn't exist yet — wrangler will
+create a stub worker, bind the secret, then you deploy the code on top of it.
+Or run it after deploy; either order works.
+
+```bash
+pnpm --filter docs run worker:setup-secret
+# prompts: "Enter a secret value:" — paste your GEMINI_API_KEY
+```
+
+**This is a one-time operation.** Re-run only if you rotate the Gemini API key.
+The secret lives in Cloudflare's secret store — it is separate from:
+- `GEMINI_API_KEY` in `docs/.env.local` (used by `worker:setup-dev-vars` for local wrangler dev only)
+- `GEMINI_API_KEY` in GitHub Secrets (not used here — that was added for future CI if needed)
 
 ### 4. Deploy the worker
 
@@ -70,37 +86,27 @@ npx wrangler login
 pnpm --filter docs run worker:deploy
 ```
 
-This builds the worker first (generates `docs-context.ts` from docs MDX +
-bundles via tsup), then deploys. On success wrangler prints the worker URL:
+Builds the worker (regenerates `docs-context.ts` from MDX + bundles via tsup)
+then deploys. On success wrangler prints:
 
 ```
-https://worktree-gemini-proxy.<your-subdomain>.workers.dev
+Deployed worktree-gemini-proxy triggers
+  https://worktree-gemini-proxy.burglekitt.workers.dev
 ```
 
-### 5. Set the Gemini API key secret
-
-```bash
-pnpm --filter docs run worker:setup-secret
-```
-
-This runs `wrangler secret put GEMINI_API_KEY` and prompts you to paste the key.
-
-If you already stored the key in Cloudflare via the dashboard, run this step
-anyway — it binds the secret to this specific worker name.
-
-### 6. Set the GitHub repo variable
+### 5. Set the GitHub repo variable
 
 In your GitHub repo → **Settings → Secrets and variables → Actions →
 Variables**, add:
 
 | Name | Value |
 |---|---|
-| `GEMINI_WORKER_URL` | `https://worktree-gemini-proxy.<your-subdomain>.workers.dev` |
+| `GEMINI_WORKER_URL` | `https://worktree-gemini-proxy.burglekitt.workers.dev` |
 
-### 7. Trigger a docs rebuild
+### 6. Trigger a docs rebuild
 
 The `docs-deploy.yml` workflow bakes `GEMINI_WORKER_URL` into the static bundle.
-After setting the variable, push a commit or manually trigger the workflow:
+Push a commit or manually trigger:
 
 ```
 GitHub repo → Actions → Deploy Docs → Run workflow

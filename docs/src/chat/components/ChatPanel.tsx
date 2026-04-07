@@ -1,6 +1,6 @@
 "use client";
-import { useChatContext } from "../../app/components/ChatContext";
-import { ChatForm } from "../../app/components/ChatForm";
+import { useChatContext } from "./ChatContext";
+import { ChatForm } from "./ChatForm";
 import { Messages } from "./Messages";
 
 export function ChatPanel() {

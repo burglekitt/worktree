@@ -1,6 +1,6 @@
 import { Drawer } from "@base-ui/react/drawer";
 import { ChatBubbleBottomCenterIcon } from "@heroicons/react/24/outline";
-import { useChatContext } from "../../app/components/ChatContext";
+import { useChatContext } from "./ChatContext";
 
 export function ChatTrigger() {
   const { setIsDrawerOpen } = useChatContext();

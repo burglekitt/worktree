@@ -39,6 +39,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const { messages, isStreaming, sendMessage, clearMessages } =
     useStreamChat(model);
 
+  console.log("messages", { messages, isStreaming });
+
   return (
     <ChatContext.Provider
       value={{

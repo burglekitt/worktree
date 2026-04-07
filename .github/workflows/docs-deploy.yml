@@ -46,7 +46,7 @@ jobs:
         env:
           # Public URL of the deployed Cloudflare Worker — baked into the static bundle at build time.
           # Set as a repository variable (not secret) in GH repo settings → Variables.
-          NEXT_PUBLIC_GEMINI_WORKER_URL: ${{ vars.GEMINI_WORKER_URL }}
+          GEMINI_WORKER_URL: ${{ vars.GEMINI_WORKER_URL }}
 
       - uses: actions/upload-pages-artifact@v3
         with:
