@@ -32,8 +32,8 @@ jobs:
 
       - name: Secret scan - detect accidental API keys
         run: |
-          if git grep -n "GEMINI_API_KEY=AI" >/dev/null 2>&1; then
+          if git grep -n "GEMINI_API""_KEY=AI" -- ':!.github/workflows/' >/dev/null 2>&1; then
             echo "ERROR: GEMINI_API_KEY value found in repository; remove it and rotate the key."
-            git --no-pager grep -n "GEMINI_API_KEY=AI"
+            git --no-pager grep -n "GEMINI_API""_KEY=AI" -- ':!.github/workflows/'
             exit 1
           fi

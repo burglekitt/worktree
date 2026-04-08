@@ -1,8 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-// Hoist before the worker import so the generated file is never loaded from disk.
-vi.mock("./docs-context.js", () => ({ SYSTEM_PROMPT: "" }));
-
 import worker from "./worker";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
