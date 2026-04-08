@@ -230,7 +230,7 @@ or use the root-level aliases where noted.
 | Variable | File | Purpose |
 |---|---|---|
 | `GEMINI_API_KEY` | `docs/.env.local` | Gemini API key for local worker dev — never committed |
-| `NEXT_PUBLIC_GEMINI_WORKER_URL` | `docs/.env.local` (optional) | Override the worker URL in Next.js; defaults to `http://localhost:8787` |
+| `GEMINI_WORKER_URL` | `docs/.env.local` (optional) | Override the worker URL in Next.js; defaults to `http://localhost:8787` |
 
 ### GitHub Actions
 
