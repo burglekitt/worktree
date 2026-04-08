@@ -60,7 +60,7 @@ export function Message({
     return (
       <div className={containerClass}>
         {header}
-        <div className={`${WARNING_CLASS} ${contentClass}`}>{content}</div>
+        <div className={WARNING_CLASS}>{content}</div>
       </div>
     );
   }
@@ -69,7 +69,7 @@ export function Message({
     return (
       <div className={containerClass}>
         {header}
-        <div className={`${ERROR_CLASS} ${contentClass}`}>{content}</div>
+        <div className={ERROR_CLASS}>{content}</div>
       </div>
     );
   }

@@ -92,7 +92,7 @@ export function useStreamChat(model: string): UseStreamChatReturn {
                 break;
               case "error":
                 console.error("[chat] SSE error:", delta.message);
-                history.failMessage(assistantId, delta.message);
+                history.warnMessage(assistantId, delta.message);
                 return;
               case "done":
                 break outer;
