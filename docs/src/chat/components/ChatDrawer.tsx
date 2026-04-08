@@ -3,7 +3,6 @@
 import { Button } from "@base-ui/react";
 import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
-import { Tooltip } from "@base-ui/react/tooltip";
 import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { cn } from "../../utils";

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "predev": "node ../bin/sync-docs-version.mjs",
+    "predev": "pnpm -C .. run docs:sync-version",
     "dev": "next dev --turbopack",
     "dev:local": "pnpm run worker:build && pnpm run worker:setup-dev-vars && concurrently -k -n worker,docs \"pnpm run worker:dev\" \"GEMINI_WORKER_URL=http://localhost:8787 next dev --turbopack\"",
     "dev:local:watch": "pnpm run worker:build && pnpm run worker:setup-dev-vars && concurrently -k -n watch,worker,docs \"pnpm run worker:build:watch\" \"pnpm run worker:dev\" \"GEMINI_WORKER_URL=http://localhost:8787 next dev --turbopack\"",
@@ -16,7 +16,7 @@
     "worker:setup-secret": "wrangler secret put GEMINI_API_KEY --config worker/wrangler.toml",
     "worker:test": "vitest run worker/worker.test.ts",
     "worker:deploy": "pnpm run worker:test && pnpm run worker:build && wrangler deploy --config worker/wrangler.toml",
-    "prebuild": "node ../bin/sync-docs-version.mjs",
+    "prebuild": "pnpm -C .. run docs:sync-version",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
     "test": "vitest run"
