@@ -10,7 +10,7 @@
  * .dev.vars.example (committed) shows the required format.
  *
  * Run automatically via: pnpm run worker:setup-dev-vars
- * (called by dev:with-worker before starting concurrent processes)
+ * (called by dev:local and dev:local:watch before starting concurrent processes)
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
