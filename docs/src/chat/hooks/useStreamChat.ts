@@ -49,18 +49,12 @@ export function useStreamChat(model: string): UseStreamChatReturn {
 
         if (!res.ok) {
           const errText = await res.text();
-          let errMsg: string;
-          if (res.status === 429) {
-            errMsg =
-              "Rate limit reached for this model. Try again later, or select a different model.";
-          } else {
-            errMsg = `Error ${res.status}`;
-            try {
-              const parsed = JSON.parse(errText) as { error?: string };
-              if (parsed.error) errMsg = parsed.error;
-            } catch {
-              // plain-text error body
-            }
+          let errMsg = `Error ${res.status}`;
+          try {
+            const parsed = JSON.parse(errText) as { error?: string };
+            if (parsed.error) errMsg = parsed.error;
+          } catch {
+            // plain-text error body
           }
           history.warnMessage(assistantId, errMsg);
           return;

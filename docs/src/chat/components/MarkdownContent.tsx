@@ -5,6 +5,39 @@ import React from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { VALID_DOC_ROUTES } from "../docs-routes.generated";
+
+/** GitHub Pages base — strip this prefix if the model accidentally emits full URLs. */
+const GH_PAGES_ORIGIN = "https://burglekitt.github.io/worktree";
+
+/**
+ * Resolve a link href coming from the model to a known doc route, or null if
+ * it should not be rendered as a link at all.
+ */
+function resolveHref(
+  raw: string,
+): { internal: true; href: string } | { internal: false; href: string } | null {
+  // Strip the GH Pages origin so full URLs become relative paths.
+  let href = raw.startsWith(GH_PAGES_ORIGIN)
+    ? raw.slice(GH_PAGES_ORIGIN.length) || "/"
+    : raw;
+
+  // Strip any fragment — we don't have fragment-level routes.
+  href = href.split("#")[0];
+
+  // Internal relative path: only allow known routes.
+  if (href.startsWith("/")) {
+    return VALID_DOC_ROUTES.has(href) ? { internal: true, href } : null;
+  }
+
+  // GitHub repo anchor links (e.g. https://github.com/burglekitt/worktree#...) — strip.
+  if (/^https?:\/\/(www\.)?github\.com\/burglekitt\/worktree/.test(href)) {
+    return null;
+  }
+
+  // Everything else (genuine external URL) — allow.
+  return { internal: false, href: raw };
+}
 
 /**
  * Map of display labels (lowercase) → doc page routes.
@@ -107,18 +140,28 @@ const components: Components = {
     return <li className="leading-relaxed">{children}</li>;
   },
 
-  // Explicit markdown links [text](url) — same tab, next/link for internal
+  // Explicit markdown links [text](url)
   a({ href, children }) {
     if (!href) return <>{children}</>;
-    if (href.startsWith("/")) {
+    const resolved = resolveHref(href);
+    if (!resolved) {
+      // Unknown / hallucinated route — render text only, no link.
+      return <>{children}</>;
+    }
+    if (resolved.internal) {
       return (
-        <Link href={href} className={LINK_CLASS}>
+        <Link href={resolved.href} className={LINK_CLASS}>
           {children}
         </Link>
       );
     }
     return (
-      <a href={href} rel="noopener noreferrer" className={LINK_CLASS}>
+      <a
+        href={resolved.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={LINK_CLASS}
+      >
         {children}
       </a>
     );

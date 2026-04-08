@@ -145,8 +145,22 @@ export default {
     if (!upstream.ok) {
       let userMessage: string;
       if (upstream.status === 429) {
-        userMessage =
-          "Rate limit reached for this model. Please switch to a different model.";
+        let isDaily = false;
+        try {
+          const errBody = (await upstream.json()) as {
+            error?: { message?: string };
+          };
+          const msg = errBody.error?.message?.toLowerCase() ?? "";
+          isDaily =
+            msg.includes("daily") ||
+            msg.includes("per_day") ||
+            msg.includes("per day");
+        } catch {
+          // couldn't parse — default to the shorter hint
+        }
+        userMessage = isDaily
+          ? "Daily request limit reached for this model — try again tomorrow, or switch to a different model."
+          : "Rate limit reached for this model — try again in a minute, or switch to a different model.";
       } else {
         try {
           const errBody = (await upstream.json()) as {
