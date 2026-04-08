@@ -75,9 +75,15 @@ to answer questions.
 
 #### 2. TanStack Intent Skill Guide (`skills/core/SKILL.md`)
 
-The repo-level skill file describes the Worktree CLI's core patterns, intent
-model, and canonical terminology. It is included before the MDX content so the
-AI understands the product vocabulary before it reads the docs.
+The repo ships as a TanStack Intent-enabled package. `skills/core/SKILL.md` is
+an AI skill file — a structured markdown document that describes the Worktree
+CLI's core patterns, intent model, and canonical terminology. It is authored
+and maintained using the `@tanstack/intent` CLI, and is included in the system
+prompt before the MDX content so the AI understands product vocabulary before
+it reads the docs.
+
+> **`SKILL.md` is managed by TanStack Intent — do not edit it by hand.**
+> Use the Intent CLI commands described in the [TanStack Intent workflow](#tanstack-intent-workflow) section below.
 
 #### Assembling the system prompt
 
@@ -106,8 +112,56 @@ React link renderer uses to validate that AI-generated links point to real pages
 
 Run this (or just `worker:build`) after:
 - Adding or removing a docs page
-- Updating `skills/core/SKILL.md`
 - Editing any MDX content that you want reflected in the AI's answers
+- After using TanStack Intent to update `skills/core/SKILL.md` (see below)
+
+---
+
+### TanStack Intent workflow
+
+The `skills/core/SKILL.md` file is owned by [`@tanstack/intent`](https://tanstack.com/intent/latest/docs/overview),
+which versions it alongside the package and provides tooling to keep it
+accurate as source docs change.
+
+#### Check if the skill is stale
+
+Run this after editing source docs (MDX pages, README, CLI source files) to see
+if the skill references outdated content:
+
+```bash
+npx @tanstack/intent@latest stale
+```
+
+#### Update / scaffold the skill
+
+If the skill is stale or you want to revise it:
+
+```bash
+npx @tanstack/intent@latest scaffold
+```
+
+This guides an AI agent through domain discovery and skill authoring
+interactively.
+
+#### Validate before publishing
+
+```bash
+npx @tanstack/intent@latest validate
+```
+
+Enforces SKILL.md format rules and packaging requirements. Run this before
+cutting a release.
+
+#### After updating the skill
+
+Once `skills/core/SKILL.md` has been updated by Intent, re-embed it in the
+worker so the docs chat reflects the changes:
+
+```bash
+pnpm --filter docs run worker:build-context
+# or as part of a full worker rebuild:
+pnpm --filter docs run worker:build
+```
 
 ### How links in AI responses are validated
 
@@ -142,12 +196,15 @@ or use the root-level aliases where noted.
 | `worker:dev` | Start the already-built worker at `http://localhost:8787` |
 | `worker:build:watch` | Watch-rebuild the worker bundle on file changes |
 
-### AI context
+### AI context & skill maintenance
 
 | Command | What it does | When to run |
 |---|---|---|
-| `worker:build-context` | Scan MDX files + SKILL.md → generate `docs-context.ts` and `docs-routes.generated.ts` | After adding/editing docs pages or the skill guide |
+| `worker:build-context` | Scan MDX files + SKILL.md → generate `docs-context.ts` and `docs-routes.generated.ts` | After adding/editing docs pages, or after updating the skill via Intent |
 | `worker:build` | Run `worker:build-context` then bundle `worker.ts` via tsup | Before `worker:dev` or before deploying |
+| `npx @tanstack/intent@latest stale` | Check if `skills/core/SKILL.md` references outdated source docs | After editing MDX pages, README, or CLI source |
+| `npx @tanstack/intent@latest scaffold` | AI-guided skill authoring / update | When the skill is stale or needs revision |
+| `npx @tanstack/intent@latest validate` | Validate SKILL.md format and packaging | Before cutting a release |
 
 ### Testing & deployment
 

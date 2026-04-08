@@ -36,7 +36,7 @@ All commands are run from the repo root with `pnpm --filter docs run <command>`.
 |---|---|---|
 | `worker:dev` | Runs the **already-built** worker locally at `http://localhost:8787` | After `worker:build`, when you want to test against the local worker |
 | `worker:build:watch` | Rebuilds the worker bundle on every file save | In a separate terminal during active worker development |
-| `worker:build-context` | Regenerates `worker/docs-context.ts` from the MDX content | Rarely — only if you want to refresh the embedded docs outside of a full build |
+| `worker:build-context` | Scans MDX files + `skills/core/SKILL.md` → regenerates `worker/docs-context.ts` (system prompt) **and** `src/chat/docs-routes.generated.ts` (valid link list) | After adding/editing any docs page or the skill guide |
 | `worker:build` | Runs `worker:build-context` then bundles `worker.ts` via tsup | Before `worker:dev`, or manually before deploying |
 
 > **Tip:** `pnpm run dev:with-worker` runs `worker:build`, `worker:setup-dev-vars`, `worker:build:watch`, `worker:dev`, and `next dev` all together — use that instead of managing terminals manually.
@@ -181,3 +181,25 @@ See `.github/workflows/worker-deploy.yml`. Deploys automatically on pushes to
 
 Zero npm dependencies — the worker calls the Gemini REST API directly with
 `fetch()`. Typical bundle size: ~30 KB.
+
+---
+
+## How the AI system prompt is built
+
+For a full explanation of how the AI gets its context, how the system prompt is
+assembled, and how AI-generated links are validated, see
+[docs/README.md — How the AI chat works](../README.md#how-the-ai-chat-works).
+
+### Quick reference for this worker
+
+The system prompt embedded in this worker contains, in order:
+
+1. **Persona & scope instructions** — restricts answers to the docs and skill guide
+2. **Linking rules** — an auto-generated list of valid `/docs/...` routes the AI
+   may link to; derived from the MDX filesystem scan in `build-context.mjs`
+3. **`skills/core/SKILL.md`** — TanStack Intent skill guide (product vocabulary
+   and core patterns)
+4. **Doc pages** — every `*.mdx` file under `src/app/docs/`, stripped of JSX
+
+The prompt is baked in at build time via `worker:build-context`. The worker
+never fetches content at runtime — all context is in the ~30 KB bundle.
