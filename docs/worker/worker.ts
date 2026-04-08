@@ -4,6 +4,7 @@ import { ALLOWED_MODELS } from "../src/chat/constants.js";
 import { SYSTEM_PROMPT } from "./docs-context.js";
 
 const DEFAULT_MODEL = ALLOWED_MODELS[0];
+const ALLOWED_CHAT_ROLES = new Set(["user", "assistant"]);
 
 // Application-level abuse protection.
 const DEFAULT_RATE_LIMIT_MAX = 30;
@@ -190,6 +191,18 @@ export default {
       ) {
         return new Response(
           JSON.stringify({ error: "Invalid message format" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...cors },
+          },
+        );
+      }
+      const role = (msg as Record<string, unknown>).role as string;
+      if (!ALLOWED_CHAT_ROLES.has(role)) {
+        return new Response(
+          JSON.stringify({
+            error: "Invalid message role (must be user or assistant)",
+          }),
           {
             status: 400,
             headers: { "Content-Type": "application/json", ...cors },
