@@ -39,7 +39,7 @@ All commands are run from the repo root with `pnpm --filter docs run <command>`.
 | `worker:build-context` | Scans MDX files + `skills/core/SKILL.md` → regenerates `worker/docs-context.ts` (system prompt) **and** `src/chat/docs-routes.generated.ts` (valid link list) | After adding/editing any docs page or the skill guide |
 | `worker:build` | Runs `worker:build-context` then bundles `worker.ts` via tsup | Before `worker:dev`, or manually before deploying |
 
-> **Tip:** `pnpm run dev:with-worker` runs `worker:build`, `worker:setup-dev-vars`, `worker:build:watch`, `worker:dev`, and `next dev` all together — use that instead of managing terminals manually.
+> **Tip:** Use `dev:local:watch` (see [Local development](#local-development)) to run the full stack in one command instead of managing terminals manually.
 
 ### Testing
 
@@ -60,10 +60,19 @@ All commands are run from the repo root with `pnpm --filter docs run <command>`.
 **Prerequisite:** `docs/.env.local` must contain your Gemini API key.
 Copy `docs/.env.local.example` → `docs/.env.local` and fill it in.
 
-Run the full dev stack (worker + Next.js + watch rebuild) from the repo root:
+Two commands cover the common cases:
+
+| Command | What it does |
+|---|---|
+| `dev:local` | Builds the worker once, then starts `worker:dev` + `next dev` concurrently. Use when you are **not** actively editing worker code. |
+| `dev:local:watch` | Same as above, but also starts `worker:build:watch` so the worker bundle rebuilds automatically on every file save. Use when you **are** editing worker code. |
 
 ```bash
-pnpm docs:dev
+# Quick iteration on docs/UI only — worker rebuilt once, then left running
+pnpm --filter docs run dev:local
+
+# Active worker development — worker rebuilds on every save
+pnpm --filter docs run dev:local:watch
 ```
 
 Or run them separately:
@@ -76,8 +85,17 @@ pnpm --filter docs run worker:dev
 pnpm --filter docs run dev
 ```
 
-The Next.js app defaults to `http://localhost:8787` when
-`GEMINI_WORKER_URL` is not set locally.
+### How `GEMINI_WORKER_URL` controls which worker is used
+
+`GEMINI_WORKER_URL` is the single environment variable that switches between the local worker and the deployed Cloudflare Worker:
+
+| Value | Where it comes from | Effect |
+|---|---|---|
+| `http://localhost:8787` | Set explicitly by `dev:local` / `dev:local:watch` at startup | Next.js sends chat requests to your local `wrangler dev` instance |
+| `https://worktree-gemini-proxy.burglekitt.workers.dev` | GitHub repo variable, baked in at build time by `docs-deploy.yml` | The production static bundle hits the live Cloudflare Worker |
+| *(unset)* | — | Next.js falls back to `http://localhost:8787` |
+
+The variable is **public** — it is just a URL, not a secret. The API key never leaves Cloudflare.
 
 ## First-time Cloudflare deployment
 

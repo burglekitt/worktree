@@ -3,6 +3,7 @@
 import { Button } from "@base-ui/react";
 import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
+import { Tooltip } from "@base-ui/react/tooltip";
 import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { cn } from "../../utils";
@@ -11,6 +12,10 @@ import { useChatContext } from "./ChatContext";
 import { ChatModelSelect } from "./ChatModelSelect";
 import { ChatPanel } from "./ChatPanel";
 import { ChatTrigger } from "./ChatTrigger";
+
+const IS_LOCAL_WORKER = (
+  process.env.GEMINI_WORKER_URL || "http://localhost:8787"
+).includes("localhost");
 
 export function ChatDrawer() {
   const {
@@ -115,9 +120,16 @@ export function ChatDrawer() {
           >
             <div className="flex flex-col p-4 border-b border-gray-200 dark:border-neutral-800 gap-2">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="font-semibold text-lg">
-                  Chat with the Worktree CLI docs
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-lg">
+                    Chat with the Worktree CLI docs
+                  </h2>
+                  {IS_LOCAL_WORKER && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 cursor-default select-none">
+                      dev
+                    </span>
+                  )}
+                </div>
                 <Drawer.Close
                   aria-label="Close chat"
                   className="p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-800 transition-colors"

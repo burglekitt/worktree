@@ -12,15 +12,19 @@ pnpm install
 pnpm docs:dev        # Next.js only (no AI chat)
 ```
 
-To run with the AI chat worker locally:
+To run with the AI chat worker locally, choose based on what you are working on:
 
 ```bash
-pnpm --filter docs run dev:with-worker
+# Editing docs/UI only — builds the worker once, then starts worker + Next.js
+pnpm --filter docs run dev:local
+
+# Editing worker code — same, but also watch-rebuilds the worker on every save
+pnpm --filter docs run dev:local:watch
 ```
 
-This single command builds the worker, writes `.dev.vars`, starts a watch
-rebuild, starts the Cloudflare Worker on `http://localhost:8787`, and starts
-Next.js on `http://localhost:3000`.
+Both commands build the worker, write `.dev.vars`, start the Cloudflare Worker on `http://localhost:8787`, and start Next.js on `http://localhost:3000`. The difference is that `dev:local:watch` also runs `worker:build:watch` so the worker bundle stays up to date as you edit.
+
+`GEMINI_WORKER_URL` is the variable that controls which worker the docs app talks to. The `dev:local*` scripts set it to `http://localhost:8787` so Next.js hits your local `wrangler dev` instance. In production, the GitHub Actions workflow bakes in the deployed Cloudflare Worker URL at build time.
 
 **Prerequisite:** `docs/.env.local` must exist with your Gemini API key.
 Copy `.env.local.example` and fill it in:
@@ -192,7 +196,8 @@ or use the root-level aliases where noted.
 | Command | What it does |
 |---|---|
 | `dev` | Start Next.js dev server (no worker) |
-| `dev:with-worker` | Build worker, set up dev vars, start worker + Next.js with watch rebuild |
+| `dev:local` | Build worker once, then start worker + Next.js — use when not editing worker code |
+| `dev:local:watch` | Same as `dev:local`, plus watch-rebuild the worker on every save — use when editing worker code |
 | `worker:dev` | Start the already-built worker at `http://localhost:8787` |
 | `worker:build:watch` | Watch-rebuild the worker bundle on file changes |
 
