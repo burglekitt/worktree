@@ -80,7 +80,7 @@ function deriveDocRoutes(subdir) {
     // Relative to src/app inside docsRoot, e.g. "docs/commands/branch/page.mdx"
     const rel = relative(join(docsRoot, "src/app"), f).replace(/\\/g, "/");
     // Strip trailing /page.mdx to get the route segment
-    const route = "/" + rel.replace(/\/page\.mdx$/, "").replace(/\.mdx$/, "");
+    const route = `/${rel.replace(/\/page\.mdx$/, "").replace(/\.mdx$/, "")}`;
     routes.add(route);
   }
   return Array.from(routes).sort();

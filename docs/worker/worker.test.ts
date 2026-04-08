@@ -232,7 +232,7 @@ describe("worker — upstream errors", () => {
     expect(res.status).toBe(429);
     const body = (await res.json()) as { error: string };
     expect(body.error).toContain(
-      "Rate limit reached for this model. Please switch to a different model.",
+      "Rate limit reached for this model — try again in a minute, or switch to a different model.",
     );
   });
 
