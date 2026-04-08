@@ -20,7 +20,7 @@ function postReq(opts: {
   body?: unknown;
 }): Request {
   const {
-    url = "https://worker.example.com/?model=gemini-2.5-flash",
+    url = "https://worker.example.com/",
     origin = "https://burglekitt.github.io",
     body,
   } = opts;
@@ -32,7 +32,10 @@ function postReq(opts: {
 }
 
 const ENV = { GEMINI_API_KEY: "test-key" };
-const VALID_BODY = { messages: [{ role: "user", content: "hi" }] };
+const VALID_BODY = {
+  model: "gemini-2.5-flash",
+  messages: [{ role: "user", content: "hi" }],
+};
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -77,7 +80,7 @@ describe("worker — request validation", () => {
 
   it("invalid JSON body → 400", async () => {
     const res = await worker.fetch(
-      new Request("https://worker.example.com/?model=gemini-2.5-flash", {
+      new Request("https://worker.example.com/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -94,19 +97,77 @@ describe("worker — request validation", () => {
 
   it("unknown model → 400", async () => {
     const res = await worker.fetch(
-      new Request("https://worker.example.com/?model=gpt-4-turbo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Origin: "https://burglekitt.github.io",
+      postReq({
+        body: {
+          model: "gpt-4-turbo",
+          messages: [{ role: "user", content: "hi" }],
         },
-        body: JSON.stringify(VALID_BODY),
       }),
       ENV,
     );
     expect(res.status).toBe(400);
     const body = (await res.json()) as { error: string };
     expect(body.error).toBe("Model not allowed");
+  });
+
+  it("messages not an array → 400", async () => {
+    const res = await worker.fetch(
+      postReq({
+        body: { model: "gemini-2.5-flash", messages: "not-an-array" },
+      }),
+      ENV,
+    );
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("messages must be an array");
+  });
+
+  it("too many messages → 400", async () => {
+    const res = await worker.fetch(
+      postReq({
+        body: {
+          model: "gemini-2.5-flash",
+          messages: Array.from({ length: 51 }, (_, i) => ({
+            role: i % 2 === 0 ? "user" : "assistant",
+            content: "msg",
+          })),
+        },
+      }),
+      ENV,
+    );
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("Too many messages (max 50)");
+  });
+
+  it("message content too long → 400", async () => {
+    const res = await worker.fetch(
+      postReq({
+        body: {
+          model: "gemini-2.5-flash",
+          messages: [{ role: "user", content: "x".repeat(20_001) }],
+        },
+      }),
+      ENV,
+    );
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("Message too long (max 20,000 chars)");
+  });
+
+  it("invalid message format (missing content) → 400", async () => {
+    const res = await worker.fetch(
+      postReq({
+        body: {
+          model: "gemini-2.5-flash",
+          messages: [{ role: "user" }],
+        },
+      }),
+      ENV,
+    );
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("Invalid message format");
   });
 });
 
@@ -139,7 +200,7 @@ describe("worker — happy path", () => {
     expect(text).toContain('"text":"hello"');
   });
 
-  it("model from query param is forwarded to Gemini URL", async () => {
+  it("model from body is forwarded to Gemini URL", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValue(
@@ -147,17 +208,7 @@ describe("worker — happy path", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    await worker.fetch(
-      new Request("https://worker.example.com/?model=gemini-2.5-flash", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Origin: "https://burglekitt.github.io",
-        },
-        body: JSON.stringify(VALID_BODY),
-      }),
-      ENV,
-    );
+    await worker.fetch(postReq({ body: VALID_BODY }), ENV);
 
     const calledUrl = fetchMock.mock.calls[0][0] as string;
     expect(calledUrl).toContain("gemini-2.5-flash:streamGenerateContent");

@@ -25,8 +25,8 @@ export function useStreamChat(model: string): UseStreamChatReturn {
   const messagesRef = useRef(history.messages);
   messagesRef.current = history.messages;
 
-  console.log("GOT GEM_WORKER_URL", process.env.GEMINI_WORKER_URL);
-  const base = process.env.GEMINI_WORKER_URL || "http://localhost:8787";
+  const base =
+    process.env.NEXT_PUBLIC_GEMINI_WORKER_URL || "http://localhost:8787";
 
   const mutation = useMutation({
     mutationFn: async ({ text, historySnapshot }: MutationVars) => {
@@ -35,13 +35,13 @@ export function useStreamChat(model: string): UseStreamChatReturn {
       abortRef.current = abort;
 
       const assistantId = history.addUserAndPlaceholder(text);
-      const workerUrl = `${base}?model=${encodeURIComponent(model)}`;
 
       try {
-        const res = await fetch(workerUrl, {
+        const res = await fetch(base, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            model,
             messages: [...historySnapshot, { role: "user", content: text }],
           }),
           signal: abort.signal,
@@ -62,7 +62,7 @@ export function useStreamChat(model: string): UseStreamChatReturn {
               // plain-text error body
             }
           }
-          history.failMessage(assistantId, errMsg);
+          history.warnMessage(assistantId, errMsg);
           return;
         }
 

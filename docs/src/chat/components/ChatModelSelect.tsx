@@ -29,7 +29,7 @@ export function ChatModelSelect({
   return (
     <Select.Root
       value={selectedModel}
-      onValueChange={(v: unknown) => v && onChange(v as AllowedModel)}
+      onValueChange={(m: unknown) => m && onChange(m as AllowedModel)}
       onOpenChange={handleOpenChange}
       id="model-select"
     >
@@ -41,7 +41,7 @@ export function ChatModelSelect({
           {label}:
         </label>
         <Select.Trigger
-          className="px-2 py-1 border rounded flex items-center gap-2"
+          className="px-2 py-1 border rounded flex items-center gap-2 w-full"
           aria-label={label}
         >
           <Select.Value placeholder="Select model" />

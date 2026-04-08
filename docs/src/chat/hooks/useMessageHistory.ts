@@ -19,8 +19,10 @@ export interface MessageHistory {
   addUserAndPlaceholder(userContent: string): string;
   /** Appends delta text to an in-progress assistant message. */
   appendDelta(id: string, delta: string): void;
-  /** Marks an in-progress assistant message as failed. */
+  /** Marks an in-progress assistant message as failed (hard error). */
   failMessage(id: string, error: string): void;
+  /** Marks an in-progress assistant message as a user-facing warning (recoverable). */
+  warnMessage(id: string, warning: string): void;
   /** Clears the streaming flag on an assistant message once the stream ends. */
   finalizeMessage(id: string): void;
   clearAll(): void;
@@ -78,6 +80,19 @@ export function useMessageHistory(storageKey: string): MessageHistory {
     [setMessages],
   );
 
+  const warnMessage = useCallback(
+    (id: string, warning: string) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === id
+            ? { ...m, content: warning, streaming: false, isWarning: true }
+            : m,
+        ),
+      );
+    },
+    [setMessages],
+  );
+
   const finalizeMessage = useCallback(
     (id: string) => {
       setMessages((prev) =>
@@ -94,6 +109,7 @@ export function useMessageHistory(storageKey: string): MessageHistory {
     addUserAndPlaceholder,
     appendDelta,
     failMessage,
+    warnMessage,
     finalizeMessage,
     clearAll,
   };

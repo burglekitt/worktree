@@ -72,6 +72,55 @@ export default {
 
     const url = new URL(request.url);
     const model = url.searchParams.get("model") ?? body.model ?? DEFAULT_MODEL;
+
+    // ── Input validation ──────────────────────────────────────────────────────
+    const messages = body.messages;
+    if (!Array.isArray(messages)) {
+      return new Response(
+        JSON.stringify({ error: "messages must be an array" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...cors },
+        },
+      );
+    }
+    if (messages.length > 50) {
+      return new Response(
+        JSON.stringify({ error: "Too many messages (max 50)" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...cors },
+        },
+      );
+    }
+    for (const msg of messages) {
+      if (
+        typeof msg !== "object" ||
+        msg === null ||
+        typeof (msg as Record<string, unknown>).role !== "string" ||
+        typeof (msg as Record<string, unknown>).content !== "string"
+      ) {
+        return new Response(
+          JSON.stringify({ error: "Invalid message format" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...cors },
+          },
+        );
+      }
+      if (
+        ((msg as Record<string, unknown>).content as string).length > 20_000
+      ) {
+        return new Response(
+          JSON.stringify({ error: "Message too long (max 20,000 chars)" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...cors },
+          },
+        );
+      }
+    }
+
     if (!(ALLOWED_MODELS as readonly string[]).includes(model)) {
       return new Response(JSON.stringify({ error: "Model not allowed" }), {
         status: 400,
@@ -100,10 +149,10 @@ export default {
           "Rate limit reached for this model. Please switch to a different model.";
       } else {
         try {
-          const body = (await upstream.json()) as {
+          const errBody = (await upstream.json()) as {
             error?: { status?: string; message?: string };
           };
-          const { status, message } = body.error ?? {};
+          const { status, message } = errBody.error ?? {};
           userMessage =
             status && message
               ? `${status}: ${message}`

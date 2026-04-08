@@ -16,6 +16,9 @@ interface MessageProps {
 const ERROR_CLASS =
   "bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 rounded px-2 py-1";
 
+const WARNING_CLASS =
+  "bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded px-2 py-1";
+
 export function Message({
   message,
   title,
@@ -24,7 +27,7 @@ export function Message({
   contentClass = "",
   renderContent,
 }: MessageProps) {
-  const { content, streaming, createdAt, isError } = message;
+  const { content, streaming, createdAt, isError, isWarning } = message;
   const formattedTime = new Date(createdAt).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -49,6 +52,15 @@ export function Message({
           <LoadingDots className="text-gray-500 h-6" size={12} />
           <span className="sr-only">Assistant is typing</span>
         </div>
+      </div>
+    );
+  }
+
+  if (isWarning) {
+    return (
+      <div className={containerClass}>
+        {header}
+        <div className={`${WARNING_CLASS} ${contentClass}`}>{content}</div>
       </div>
     );
   }

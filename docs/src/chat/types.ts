@@ -8,6 +8,8 @@ export interface ChatMessage {
   createdAt: number;
   /** True while the assistant is still streaming this message */
   streaming?: boolean;
-  /** True if the message is an error */
+  /** True if the message is a hard error (connection failure, no body, etc.) */
   isError?: boolean;
+  /** True if the message is a recoverable warning (rate limit, validation, etc.) */
+  isWarning?: boolean;
 }

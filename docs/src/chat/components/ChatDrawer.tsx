@@ -112,7 +112,7 @@ export function ChatDrawer() {
             )}
           >
             <div className="flex flex-col p-4 border-b border-gray-200 dark:border-neutral-800 gap-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-2">
                 <h2 className="font-semibold text-lg">
                   Chat with the Worktree CLI docs
                 </h2>
