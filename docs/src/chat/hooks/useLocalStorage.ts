@@ -36,10 +36,16 @@ function removeItem(key: string): void {
  * Key changes are handled synchronously during render (React getDerivedStateFromProps
  * pattern) so there is no one-frame flash of stale data when the key changes.
  */
+export interface UseLocalStorageReturn<T> {
+  value: T;
+  setValue: React.Dispatch<React.SetStateAction<T>>;
+  removeItem: () => void;
+}
+
 export function useLocalStorage<T>(
   key: string,
   initialValue: T,
-): [T, React.Dispatch<React.SetStateAction<T>>] {
+): UseLocalStorageReturn<T> {
   // Stable ref so initialValue never needs to be in dep arrays.
   const initialValueRef = useRef(initialValue);
 
@@ -95,7 +101,12 @@ export function useLocalStorage<T>(
     return () => window.removeEventListener("storage", onStorage);
   }, [key]);
 
-  return [value, setValue];
+  const remove = useCallback(() => {
+    removeItem(key);
+    setStateRaw({ key, value: initialValueRef.current });
+  }, [key]);
+
+  return { value, setValue, removeItem: remove };
 }
 
 export { removeItem as removeLocalStorageItem };

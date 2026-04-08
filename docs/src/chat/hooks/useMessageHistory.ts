@@ -29,10 +29,9 @@ export interface MessageHistory {
 }
 
 export function useMessageHistory(storageKey: string): MessageHistory {
-  const [rawMessages, setMessages] = useLocalStorage<ChatMessage[]>(
-    storageKey,
-    [],
-  );
+  const { value: rawMessages, setValue: setMessages } = useLocalStorage<
+    ChatMessage[]
+  >(storageKey, []);
   // Sanitize on the way out — only affects the consumer view, not storage
   const messages = sanitizeLoaded(rawMessages);
 

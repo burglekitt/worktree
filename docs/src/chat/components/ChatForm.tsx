@@ -48,7 +48,7 @@ export function ChatForm({ onSubmit, disabled }: ChatFormProps) {
         }}
         className="p-4 border-t border-gray-200 dark:border-neutral-800"
       >
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <FormField name="message">
             <ChatInput
               ref={inputRef}

@@ -1,4 +1,9 @@
 import { Button } from "@base-ui/react";
+import {
+  CubeTransparentIcon,
+  RocketLaunchIcon,
+} from "@heroicons/react/24/outline";
+import { cn } from "../../utils";
 import { useFormStore } from "../form/FormContext";
 
 interface ChatSubmitButtonProps {
@@ -13,9 +18,17 @@ export function ChatSubmitButton({ disabled }: ChatSubmitButtonProps) {
     <Button
       type="submit"
       disabled={!!(disabled || isSubmitting || !String(value ?? "").trim())}
-      className="px-6 py-2 bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400 text-white rounded-lg disabled:opacity-50 ml-2 transition-colors"
+      className={cn(
+        "bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400 text-white rounded-lg transition-colors",
+        "disabled:opacity-80 disabled:cursor-not-allowed",
+        "p-2 ml-2",
+      )}
     >
-      {isSubmitting ? "..." : "Send"}
+      {isSubmitting ? (
+        <CubeTransparentIcon className="w-5 h-5 animate-spin" />
+      ) : (
+        <RocketLaunchIcon className="w-5 h-5" />
+      )}
     </Button>
   );
 }

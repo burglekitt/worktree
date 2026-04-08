@@ -5,6 +5,7 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { cn } from "../../utils";
 import type { AllowedModel, FREE_MODELS } from "../constants";
 
 interface ChatModelSelectProps {
@@ -33,7 +34,7 @@ export function ChatModelSelect({
       onOpenChange={handleOpenChange}
       id="model-select"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full">
         <label
           className="text-sm text-gray-500 dark:text-gray-400"
           htmlFor="model-select"
@@ -41,7 +42,10 @@ export function ChatModelSelect({
           {label}:
         </label>
         <Select.Trigger
-          className="px-2 py-1 border rounded flex items-center gap-2 w-full"
+          className={cn(
+            "flex items-center justify-between gap-2 ",
+            "px-2 py-1 border rounded w-full",
+          )}
           aria-label={label}
         >
           <Select.Value placeholder="Select model" />

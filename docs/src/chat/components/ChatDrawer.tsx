@@ -2,7 +2,8 @@
 
 import { Button } from "@base-ui/react";
 import { Drawer } from "@base-ui/react/drawer";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Menu } from "@base-ui/react/menu";
+import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { cn } from "../../utils";
 import { FREE_MODELS } from "../constants";
@@ -22,6 +23,7 @@ export function ChatDrawer() {
     model,
     setModel,
     clearMessages,
+    clearAllMessages,
   } = useChatContext();
 
   const popupRef = useRef<HTMLDivElement | null>(null);
@@ -124,20 +126,59 @@ export function ChatDrawer() {
                   <XMarkIcon className="h-5 w-5" />
                 </Drawer.Close>
               </div>
-              <div className="flex items-center justify-between gap-4">
-                <ChatModelSelect
-                  label="Model"
-                  models={modelOptions}
-                  onChange={handleModelChange}
-                  selectedModel={model}
-                />
-                <Button
-                  onClick={clearMessages}
-                  className="px-2 py-1 text-sm border rounded bg-gray-100 dark:bg-neutral-800 dark:border-neutral-700"
-                  aria-label="Clear conversation"
-                >
-                  Clear
-                </Button>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <ChatModelSelect
+                    label="Model"
+                    models={modelOptions}
+                    onChange={handleModelChange}
+                    selectedModel={model}
+                  />
+                </div>
+                {/* Split clear button */}
+                <div className="flex items-stretch border rounded overflow-hidden border-gray-200 dark:border-neutral-700 shrink-0">
+                  <Button
+                    onClick={clearMessages}
+                    className="px-2 py-1 text-sm bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                    aria-label="Clear current chat"
+                  >
+                    Clear
+                  </Button>
+                  <div className="w-px bg-gray-200 dark:bg-neutral-700 self-stretch" />
+                  <Menu.Root>
+                    <Menu.Trigger
+                      className="px-1 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors flex items-center"
+                      aria-label="More clear options"
+                    >
+                      <ChevronDownIcon className="w-3 h-3" />
+                    </Menu.Trigger>
+                    <Menu.Portal>
+                      <Menu.Positioner
+                        side="bottom"
+                        align="end"
+                        sideOffset={4}
+                        positionMethod="fixed"
+                        className="z-[10001]"
+                      >
+                        <Menu.Popup className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded shadow-lg min-w-[160px] py-1">
+                          <Menu.Item
+                            onClick={clearMessages}
+                            className="px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800 data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-neutral-800"
+                          >
+                            Clear chat
+                          </Menu.Item>
+                          <Menu.Separator className="my-1 border-t border-gray-200 dark:border-neutral-700" />
+                          <Menu.Item
+                            onClick={clearAllMessages}
+                            className="px-3 py-1.5 text-sm cursor-pointer text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-neutral-800 data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-neutral-800"
+                          >
+                            Clear all chats
+                          </Menu.Item>
+                        </Menu.Popup>
+                      </Menu.Positioner>
+                    </Menu.Portal>
+                  </Menu.Root>
+                </div>
               </div>
             </div>
 
