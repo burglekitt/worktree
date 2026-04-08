@@ -41,7 +41,7 @@ export function ChatModelSelect({
           {label}:
         </label>
         <Select.Trigger
-          className="px-2 py-1 border rounded flex items-center gap-2 w-full"
+          className="px-2 py-1 border rounded flex items-center gap-2"
           aria-label={label}
         >
           <Select.Value placeholder="Select model" />
