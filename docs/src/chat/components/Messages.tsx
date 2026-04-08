@@ -7,12 +7,17 @@ import { UserMessage } from "./UserMessage";
 
 interface MessagesProps {
   messages: ChatMessage[];
+  isStreaming?: boolean;
 }
 
-export function Messages({ messages }: MessagesProps) {
+export function Messages({ messages, isStreaming = false }: MessagesProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const lastSnapshotRef = useRef<string | undefined>(undefined);
+  const hasStreamingAssistant = messages.some(
+    (m) => m.role === "assistant" && m.streaming,
+  );
+  const showPendingAssistant = isStreaming && !hasStreamingAssistant;
 
   useLayoutEffect(() => {
     const el = containerRef.current;
@@ -51,6 +56,17 @@ export function Messages({ messages }: MessagesProps) {
           <UserMessage key={message.id} message={message} />
         ),
       )}
+      {showPendingAssistant ? (
+        <AssistantMessage
+          message={{
+            id: "pending-assistant",
+            role: "assistant",
+            content: "",
+            createdAt: Date.now(),
+            streaming: true,
+          }}
+        />
+      ) : null}
       <div ref={endRef} />
     </div>
   );

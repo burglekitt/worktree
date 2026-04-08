@@ -18,15 +18,24 @@ function postReq(opts: {
   url?: string;
   origin?: string;
   body?: unknown;
+  clientIp?: string;
 }): Request {
   const {
     url = "https://worker.example.com/",
     origin = "https://burglekitt.github.io",
     body,
+    clientIp,
   } = opts;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Origin: origin,
+  };
+  if (clientIp) {
+    headers["CF-Connecting-IP"] = clientIp;
+  }
   return new Request(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Origin: origin },
+    headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 }
@@ -288,5 +297,73 @@ describe("worker — CORS", () => {
     expect(res.headers.get("Access-Control-Allow-Origin")).toBe(
       "https://burglekitt.github.io",
     );
+  });
+});
+
+describe("worker — app-level rate limiting", () => {
+  it("limits repeated requests from same client IP within window", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(sseStream(["data: [DONE]"]), { status: 200 }),
+        ),
+    );
+
+    const strictEnv = {
+      ...ENV,
+      WORKER_RATE_LIMIT_MAX: "2",
+      WORKER_RATE_LIMIT_WINDOW_SECONDS: "60",
+    };
+
+    const r1 = await worker.fetch(
+      postReq({ body: VALID_BODY, clientIp: "203.0.113.10" }),
+      strictEnv,
+    );
+    const r2 = await worker.fetch(
+      postReq({ body: VALID_BODY, clientIp: "203.0.113.10" }),
+      strictEnv,
+    );
+    const r3 = await worker.fetch(
+      postReq({ body: VALID_BODY, clientIp: "203.0.113.10" }),
+      strictEnv,
+    );
+
+    expect(r1.status).toBe(200);
+    expect(r2.status).toBe(200);
+    expect(r3.status).toBe(429);
+    const body = (await r3.json()) as { error: string };
+    expect(body.error).toContain("Rate limit exceeded for this worker");
+    expect(r3.headers.get("Retry-After")).toBeTruthy();
+  });
+
+  it("tracks limits independently per client IP", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(sseStream(["data: [DONE]"]), { status: 200 }),
+        ),
+    );
+
+    const strictEnv = {
+      ...ENV,
+      WORKER_RATE_LIMIT_MAX: "1",
+      WORKER_RATE_LIMIT_WINDOW_SECONDS: "60",
+    };
+
+    const firstIp = await worker.fetch(
+      postReq({ body: VALID_BODY, clientIp: "203.0.113.20" }),
+      strictEnv,
+    );
+    const secondIp = await worker.fetch(
+      postReq({ body: VALID_BODY, clientIp: "203.0.113.21" }),
+      strictEnv,
+    );
+
+    expect(firstIp.status).toBe(200);
+    expect(secondIp.status).toBe(200);
   });
 });

@@ -185,6 +185,26 @@ All other origins receive the production origin in `Access-Control-Allow-Origin`
 so browsers will block unexpected cross-origin requests. Update `CORS_ORIGINS`
 in `worker.ts` if you add a custom domain.
 
+## Abuse protection
+
+CORS controls browser behavior, but it is **not** authentication. This worker
+also applies app-level rate limiting before calling Gemini.
+
+- Limit key: client IP (`CF-Connecting-IP`, fallback to first `X-Forwarded-For` value)
+- Default policy: `30` requests per `60` seconds per client
+- Response on limit: HTTP `429` with `Retry-After`
+
+You can tune limits with non-secret worker vars in `worker/wrangler.toml`:
+
+```toml
+[vars]
+WORKER_RATE_LIMIT_MAX = "30"
+WORKER_RATE_LIMIT_WINDOW_SECONDS = "60"
+```
+
+For stronger protection, add Cloudflare WAF/Rate Limiting or Turnstile in front
+of this endpoint.
+
 ## CI auto-deployment (optional)
 
 See `.github/workflows/worker-deploy.yml`. Deploys automatically on pushes to

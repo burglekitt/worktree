@@ -5,6 +5,10 @@ import { SYSTEM_PROMPT } from "./docs-context.js";
 
 const DEFAULT_MODEL = ALLOWED_MODELS[0];
 
+// Application-level abuse protection.
+const DEFAULT_RATE_LIMIT_MAX = 30;
+const DEFAULT_RATE_LIMIT_WINDOW_SECONDS = 60;
+
 // Allowed origins for CORS.
 // Production: GitHub Pages static site host (all routes share this origin).
 // Development: local Next.js dev server.
@@ -22,6 +26,69 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
 }
 
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+
+type RateBucket = { count: number; resetAtMs: number };
+const rateLimitBuckets = new Map<string, RateBucket>();
+
+function parsePositiveInt(value: string | undefined, fallback: number): number {
+  if (!value) return fallback;
+  const n = Number.parseInt(value, 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+function getClientId(request: Request): string {
+  const cfConnectingIp = request.headers.get("cf-connecting-ip")?.trim();
+  if (cfConnectingIp) return cfConnectingIp;
+
+  const xForwardedFor = request.headers.get("x-forwarded-for");
+  if (xForwardedFor) {
+    const first = xForwardedFor.split(",")[0]?.trim();
+    if (first) return first;
+  }
+
+  return "unknown";
+}
+
+function checkRateLimit(request: Request, env: Record<string, string>) {
+  const max = parsePositiveInt(
+    env.WORKER_RATE_LIMIT_MAX,
+    DEFAULT_RATE_LIMIT_MAX,
+  );
+  const windowSeconds = parsePositiveInt(
+    env.WORKER_RATE_LIMIT_WINDOW_SECONDS,
+    DEFAULT_RATE_LIMIT_WINDOW_SECONDS,
+  );
+  const windowMs = windowSeconds * 1000;
+
+  const now = Date.now();
+  const clientId = getClientId(request);
+  const bucket = rateLimitBuckets.get(clientId);
+
+  if (!bucket || now >= bucket.resetAtMs) {
+    rateLimitBuckets.set(clientId, { count: 1, resetAtMs: now + windowMs });
+    return {
+      limited: false as const,
+      remaining: max - 1,
+      resetAtMs: now + windowMs,
+    };
+  }
+
+  if (bucket.count >= max) {
+    return {
+      limited: true as const,
+      remaining: 0,
+      resetAtMs: bucket.resetAtMs,
+    };
+  }
+
+  bucket.count += 1;
+  rateLimitBuckets.set(clientId, bucket);
+  return {
+    limited: false as const,
+    remaining: Math.max(0, max - bucket.count),
+    resetAtMs: bucket.resetAtMs,
+  };
+}
 
 type GeminiPart = { text: string };
 type GeminiContent = { role: string; parts: GeminiPart[] };
@@ -44,6 +111,27 @@ export default {
     }
     if (request.method !== "POST") {
       return new Response("Not allowed", { status: 405, headers: cors });
+    }
+
+    const rateLimit = checkRateLimit(request, env);
+    if (rateLimit.limited) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Rate limit exceeded for this worker. Please wait and try again.",
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": Math.max(
+              1,
+              Math.ceil((rateLimit.resetAtMs - Date.now()) / 1000),
+            ).toString(),
+            ...cors,
+          },
+        },
+      );
     }
 
     const key = env.GEMINI_API_KEY;

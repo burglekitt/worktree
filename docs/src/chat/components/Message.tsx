@@ -13,11 +13,17 @@ interface MessageProps {
   renderContent?: (content: string) => React.ReactNode;
 }
 
-const ERROR_CLASS =
-  "bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 rounded px-2 py-1";
+const BUBBLE_BASE_CLASS =
+  "rounded-lg px-3 py-2 transition-[background-color,color,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]";
+
+const ASSISTANT_CLASS =
+  "bg-blue-50 dark:bg-blue-950/60 text-gray-800 dark:text-gray-100";
 
 const WARNING_CLASS =
-  "bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded px-2 py-1";
+  "bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200";
+
+const ERROR_CLASS =
+  "bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200";
 
 export function Message({
   message,
@@ -42,43 +48,27 @@ export function Message({
     </div>
   );
 
-  if (streaming && !content) {
-    return (
-      <div className={containerClass}>
-        {header}
-        <div
-          className={`flex items-center gap-2 text-sm italic text-gray-500 ${contentClass}`}
-        >
-          <LoadingDots className="text-gray-500 h-6" size={12} />
-          <span className="sr-only">Assistant is typing</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (isWarning) {
-    return (
-      <div className={containerClass}>
-        {header}
-        <div className={WARNING_CLASS}>{content}</div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className={containerClass}>
-        {header}
-        <div className={ERROR_CLASS}>{content}</div>
-      </div>
-    );
-  }
+  const stateClass = isError
+    ? ERROR_CLASS
+    : isWarning
+      ? WARNING_CLASS
+      : ASSISTANT_CLASS;
+  const bubbleClass = `${BUBBLE_BASE_CLASS} ${stateClass} ${contentClass}`;
 
   return (
     <div className={containerClass}>
       {header}
-      <div className={contentClass}>
-        {renderContent ? renderContent(content) : content}
+      <div className={bubbleClass}>
+        {streaming && !content ? (
+          <div className="flex items-center gap-2 text-sm italic">
+            <LoadingDots className="text-current h-6" size={12} />
+            <span className="sr-only">Assistant is typing</span>
+          </div>
+        ) : renderContent ? (
+          renderContent(content)
+        ) : (
+          content
+        )}
       </div>
     </div>
   );

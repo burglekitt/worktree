@@ -4,6 +4,9 @@ import { useCallback, useRef } from "react";
 import { parseGeminiSseLine } from "../../utils/parseGeminiSseLine";
 import { useMessageHistory } from "./useMessageHistory";
 
+const REQUEST_TIMEOUT_MS = 120_000;
+const STREAM_IDLE_TIMEOUT_MS = 30_000;
+
 export interface UseStreamChatReturn {
   messages: ReturnType<typeof useMessageHistory>["messages"];
   isStreaming: boolean;
@@ -14,6 +17,7 @@ export interface UseStreamChatReturn {
 interface MutationVars {
   text: string;
   historySnapshot: Array<{ role: string; content: string }>;
+  assistantId: string;
 }
 
 export function useStreamChat(model: string): UseStreamChatReturn {
@@ -28,12 +32,39 @@ export function useStreamChat(model: string): UseStreamChatReturn {
   const base = process.env.GEMINI_WORKER_URL || "http://localhost:8787";
 
   const mutation = useMutation({
-    mutationFn: async ({ text, historySnapshot }: MutationVars) => {
+    mutationFn: async ({
+      text,
+      historySnapshot,
+      assistantId,
+    }: MutationVars) => {
       abortRef.current?.abort();
       const abort = new AbortController();
       abortRef.current = abort;
+      let didTimeout = false;
+      const requestTimeout = setTimeout(() => {
+        didTimeout = true;
+        abort.abort();
+      }, REQUEST_TIMEOUT_MS);
 
-      const assistantId = history.addUserAndPlaceholder(text);
+      const readWithTimeout = async (
+        reader: ReadableStreamDefaultReader<Uint8Array>,
+      ) => {
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        try {
+          return await Promise.race([
+            reader.read(),
+            new Promise<never>((_, reject) => {
+              timeoutId = setTimeout(() => {
+                didTimeout = true;
+                abort.abort();
+                reject(new Error("Stream timeout"));
+              }, STREAM_IDLE_TIMEOUT_MS);
+            }),
+          ]);
+        } finally {
+          if (timeoutId) clearTimeout(timeoutId);
+        }
+      };
 
       try {
         const res = await fetch(base, {
@@ -70,7 +101,7 @@ export function useStreamChat(model: string): UseStreamChatReturn {
         let textChunks = 0;
 
         outer: while (true) {
-          const { done, value } = await reader.read();
+          const { done, value } = await readWithTimeout(reader);
           if (done) break;
           buf += decoder.decode(value, { stream: true });
           const lines = buf.split("\n");
@@ -100,10 +131,16 @@ export function useStreamChat(model: string): UseStreamChatReturn {
           );
         }
       } catch (err) {
-        if ((err as { name?: string }).name !== "AbortError") {
+        if (didTimeout) {
+          history.warnMessage(
+            assistantId,
+            "Request timed out while waiting for model output. Please retry or switch model.",
+          );
+        } else if ((err as { name?: string }).name !== "AbortError") {
           history.failMessage(assistantId, "Connection error");
         }
       } finally {
+        clearTimeout(requestTimeout);
         history.finalizeMessage(assistantId);
       }
     },
@@ -114,13 +151,17 @@ export function useStreamChat(model: string): UseStreamChatReturn {
   const sendMessage = useCallback(
     async (text: string) => {
       if (!text.trim() || isPending) return;
+      const trimmed = text.trim();
       const historySnapshot = messagesRef.current.map((m) => ({
         role: m.role,
         content: m.content,
       }));
-      await mutateAsync({ text, historySnapshot });
+      // Optimistically append the user message + assistant placeholder so the
+      // loading state appears immediately, even before network round-trip.
+      const assistantId = history.addUserAndPlaceholder(trimmed);
+      await mutateAsync({ text: trimmed, historySnapshot, assistantId });
     },
-    [isPending, mutateAsync],
+    [history, isPending, mutateAsync],
   );
 
   const clearMessages = useCallback(() => {
