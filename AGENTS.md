@@ -113,10 +113,6 @@ Instructions:
 3. Validate YAML frontmatter and that any example commands are correct for this repo (use `pnpm` scripts where appropriate).
 4. Ask reviewers to verify the agent on a representative PR.
 
-## Further Reference
-
-1
-
 ## Contact / Maintainers
 
 For agent reviews and maintenance, ask the repository maintainers listed in `package.json` (`contributors`) or open a PR with suggested agent files.
