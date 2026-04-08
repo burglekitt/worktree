@@ -1,8 +1,16 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import type { ChatMessage } from "../types";
+import { useLocalStorage } from "./useLocalStorage";
 
 function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/** Strip messages that were mid-stream when the page last closed. */
+function sanitizeLoaded(messages: ChatMessage[]): ChatMessage[] {
+  return messages
+    .filter((m) => !(m.streaming && m.content === ""))
+    .map((m) => (m.streaming ? { ...m, streaming: false } : m));
 }
 
 export interface MessageHistory {
@@ -18,40 +26,68 @@ export interface MessageHistory {
   clearAll(): void;
 }
 
-export function useMessageHistory(): MessageHistory {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+export function useMessageHistory(storageKey: string): MessageHistory {
+  const [rawMessages, setMessages] = useLocalStorage<ChatMessage[]>(
+    storageKey,
+    [],
+  );
+  // Sanitize on the way out — only affects the consumer view, not storage
+  const messages = sanitizeLoaded(rawMessages);
 
-  const addUserAndPlaceholder = useCallback((userContent: string): string => {
-    const assistantId = makeId();
-    setMessages((prev) => [
-      ...prev,
-      { id: makeId(), role: "user", content: userContent },
-      { id: assistantId, role: "assistant", content: "", streaming: true },
-    ]);
-    return assistantId;
-  }, []);
+  const addUserAndPlaceholder = useCallback(
+    (userContent: string): string => {
+      const assistantId = makeId();
+      const now = Date.now();
+      setMessages((prev) => [
+        ...sanitizeLoaded(prev),
+        { id: makeId(), role: "user", content: userContent, createdAt: now },
+        {
+          id: assistantId,
+          role: "assistant",
+          content: "",
+          createdAt: now,
+          streaming: true,
+        },
+      ]);
+      return assistantId;
+    },
+    [setMessages],
+  );
 
-  const appendDelta = useCallback((id: string, delta: string) => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, content: m.content + delta } : m)),
-    );
-  }, []);
+  const appendDelta = useCallback(
+    (id: string, delta: string) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === id ? { ...m, content: m.content + delta } : m,
+        ),
+      );
+    },
+    [setMessages],
+  );
 
-  const failMessage = useCallback((id: string, error: string) => {
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === id ? { ...m, content: error, streaming: false } : m,
-      ),
-    );
-  }, []);
+  const failMessage = useCallback(
+    (id: string, error: string) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === id
+            ? { ...m, content: error, streaming: false, isError: true }
+            : m,
+        ),
+      );
+    },
+    [setMessages],
+  );
 
-  const finalizeMessage = useCallback((id: string) => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, streaming: false } : m)),
-    );
-  }, []);
+  const finalizeMessage = useCallback(
+    (id: string) => {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, streaming: false } : m)),
+      );
+    },
+    [setMessages],
+  );
 
-  const clearAll = useCallback(() => setMessages([]), []);
+  const clearAll = useCallback(() => setMessages([]), [setMessages]);
 
   return {
     messages,

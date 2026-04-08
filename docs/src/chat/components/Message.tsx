@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import type { ChatMessage } from "../types";
 import { LoadingDots } from "./LoadingDots";
 
@@ -9,6 +10,7 @@ interface MessageProps {
   containerClass?: string;
   titleClass?: string;
   contentClass?: string;
+  renderContent?: (content: string) => React.ReactNode;
 }
 
 const ERROR_CLASS =
@@ -18,55 +20,54 @@ export function Message({
   message,
   title,
   containerClass = "mb-4",
-  titleClass = "font-semibold mb-1",
+  titleClass = "font-semibold",
   contentClass = "",
+  renderContent,
 }: MessageProps) {
-  const { content, streaming } = message;
+  const { content, streaming, createdAt, isError } = message;
+  const formattedTime = new Date(createdAt).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const header = (
+    <div className="flex items-baseline justify-between mb-1">
+      <div className={titleClass}>{title}</div>
+      <time className="text-xs text-gray-400 dark:text-gray-500 ml-2">
+        {formattedTime}
+      </time>
+    </div>
+  );
 
   if (streaming && !content) {
     return (
       <div className={containerClass}>
-        <div className={titleClass}>{title}</div>
+        {header}
         <div
           className={`flex items-center gap-2 text-sm italic text-gray-500 ${contentClass}`}
         >
-          <LoadingDots className="text-gray-500" size={12} />
+          <LoadingDots className="text-gray-500 h-6" size={12} />
           <span className="sr-only">Assistant is typing</span>
         </div>
       </div>
     );
   }
 
-  // Worker returned a JSON error payload
-  const trimmed = content.trim();
-  if (trimmed.startsWith("{") && trimmed.includes('"error"')) {
-    try {
-      const parsed = JSON.parse(trimmed) as unknown;
-      if (
-        parsed !== null &&
-        typeof parsed === "object" &&
-        "error" in parsed &&
-        typeof (parsed as { error: unknown }).error === "string"
-      ) {
-        return (
-          <div className={containerClass}>
-            <div className={titleClass}>{title}</div>
-            <div className={`${ERROR_CLASS} ${contentClass}`}>
-              <strong className="mr-1">Error:</strong>
-              {(parsed as { error: string }).error}
-            </div>
-          </div>
-        );
-      }
-    } catch {
-      // Not valid JSON — fall through to plain text
-    }
+  if (isError) {
+    return (
+      <div className={containerClass}>
+        {header}
+        <div className={`${ERROR_CLASS} ${contentClass}`}>{content}</div>
+      </div>
+    );
   }
 
   return (
     <div className={containerClass}>
-      <div className={titleClass}>{title}</div>
-      <div className={contentClass}>{content}</div>
+      {header}
+      <div className={contentClass}>
+        {renderContent ? renderContent(content) : content}
+      </div>
     </div>
   );
 }

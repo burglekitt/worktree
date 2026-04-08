@@ -17,7 +17,7 @@ interface MutationVars {
 }
 
 export function useStreamChat(model: string): UseStreamChatReturn {
-  const history = useMessageHistory();
+  const history = useMessageHistory(`docs_chat_history_${model}`);
   const abortRef = useRef<AbortController | null>(null);
   // Stable ref so sendMessage always reads the latest messages without
   // needing to list `history.messages` as a useCallback dependency (which
@@ -49,22 +49,32 @@ export function useStreamChat(model: string): UseStreamChatReturn {
 
         if (!res.ok) {
           const errText = await res.text();
-          let errMsg = `Error ${res.status}`;
-          try {
-            const parsed = JSON.parse(errText) as { error?: string };
-            if (parsed.error) errMsg = parsed.error;
-          } catch {
-            // plain-text error body
+          let errMsg: string;
+          if (res.status === 429) {
+            errMsg =
+              "Rate limit reached for this model. Try again later, or select a different model.";
+          } else {
+            errMsg = `Error ${res.status}`;
+            try {
+              const parsed = JSON.parse(errText) as { error?: string };
+              if (parsed.error) errMsg = parsed.error;
+            } catch {
+              // plain-text error body
+            }
           }
           history.failMessage(assistantId, errMsg);
           return;
         }
 
-        const reader = res.body?.getReader();
-        if (!reader) return;
+        if (!res.body) {
+          history.failMessage(assistantId, "Error: empty response body");
+          return;
+        }
 
+        const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buf = "";
+        let textChunks = 0;
 
         outer: while (true) {
           const { done, value } = await reader.read();
@@ -77,9 +87,11 @@ export function useStreamChat(model: string): UseStreamChatReturn {
             const delta = parseGeminiSseLine(line);
             switch (delta.type) {
               case "text":
+                textChunks++;
                 history.appendDelta(assistantId, delta.text);
                 break;
               case "error":
+                console.error("[chat] SSE error:", delta.message);
                 history.failMessage(assistantId, delta.message);
                 return;
               case "done":
@@ -87,6 +99,12 @@ export function useStreamChat(model: string): UseStreamChatReturn {
               // "skip": do nothing
             }
           }
+        }
+
+        if (textChunks === 0) {
+          console.warn(
+            "[chat] stream completed with zero text chunks — check worker URL and model",
+          );
         }
       } catch (err) {
         if ((err as { name?: string }).name !== "AbortError") {

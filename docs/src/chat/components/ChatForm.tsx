@@ -46,14 +46,14 @@ export function ChatForm({ onSubmit, disabled }: ChatFormProps) {
           e.preventDefault();
           form.handleSubmit();
         }}
-        className="p-4 border-t border-gray-200 dark:border-gray-800"
+        className="p-4 border-t border-gray-200 dark:border-neutral-800"
       >
         <div className="flex gap-2">
           <FormField name="message">
             <ChatInput
               ref={inputRef}
               placeholder="Type a message..."
-              className="flex-1 px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700"
+              className="flex-1 px-4 py-2 border rounded-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-neutral-700"
               disabled={disabled}
             />
           </FormField>

@@ -45,19 +45,11 @@ export function ChatDrawer() {
 
   function handleModelChange(value: string | null): void {
     if (value) {
+      // Each model has its own storage key — just switch; don't clear.
+      // clearMessages() is only for the explicit Clear button.
       setModel(value);
-      clearMessages();
     }
   }
-
-  // Persist selected model to localStorage so it sticks across sessions.
-  useEffect(() => {
-    try {
-      localStorage.setItem("docs_chat_model", model);
-    } catch {
-      // ignore
-    }
-  }, [model]);
 
   // keyboard: open chat with Ctrl+K for convenience
   useEffect(() => {
@@ -110,8 +102,8 @@ export function ChatDrawer() {
               "w-[400px] max-w-full h-full",
               "transform-gpu",
               "webkitbackface-visibility-hidden",
-              "bg-white dark:bg-slate-900",
-              "border-l border-gray-200 dark:border-gray-800",
+              "bg-gray-50 dark:bg-neutral-950",
+              "border-l border-gray-200 dark:border-neutral-800",
               "flex flex-col shadow-2xl text-gray-900 dark:text-gray-100",
               "transition-transform duration-500 ease-in-out",
               entered && !isDrawerClosing
@@ -119,31 +111,33 @@ export function ChatDrawer() {
                 : "translate-x-full",
             )}
           >
-            <div className="flex items-center justify-between p-4 border-b">
-              <div className="flex items-center gap-2">
-                <div className="font-semibold text-lg">Chat</div>
+            <div className="flex flex-col p-4 border-b border-gray-200 dark:border-neutral-800 gap-2">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-lg">
+                  Chat with the Worktree CLI docs
+                </h2>
+                <Drawer.Close
+                  aria-label="Close chat"
+                  className="p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-800 transition-colors"
+                  onClick={handleClose}
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </Drawer.Close>
+              </div>
+              <div className="flex items-center justify-between gap-4">
                 <ChatModelSelect
                   label="Model"
                   models={modelOptions}
                   onChange={handleModelChange}
                   selectedModel={model}
                 />
-              </div>
-              <div className="flex items-center gap-2">
                 <Button
                   onClick={clearMessages}
-                  className="px-2 py-1 text-sm border rounded bg-gray-100 dark:bg-slate-800"
+                  className="px-2 py-1 text-sm border rounded bg-gray-100 dark:bg-neutral-800 dark:border-neutral-700"
                   aria-label="Clear conversation"
                 >
                   Clear
                 </Button>
-                <Drawer.Close
-                  aria-label="Close chat"
-                  className="px-2 py-1 rounded text-sm border"
-                  onClick={handleClose}
-                >
-                  <XMarkIcon style={{ width: 16, height: 16 }} />
-                </Drawer.Close>
               </div>
             </div>
 

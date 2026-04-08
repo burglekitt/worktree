@@ -19,6 +19,42 @@ The static bundle bakes in `GEMINI_WORKER_URL` at build time.
 That variable is set as a GitHub repo **variable** (not a secret) and injected
 by the `docs-deploy.yml` workflow.
 
+## Commands reference
+
+All commands are run from the repo root with `pnpm --filter docs run <command>`.
+
+### One-time setup
+
+| Command | What it does | When to run |
+|---|---|---|
+| `worker:setup-secret` | Stores `GEMINI_API_KEY` as an encrypted Cloudflare secret | Once per worker, or when rotating the key |
+| `worker:setup-dev-vars` | Writes `docs/worker/.dev.vars` from `docs/.env.local` so `wrangler dev` can read the key | Once per machine, or after changing `.env.local` |
+
+### Normal development
+
+| Command | What it does | When to run |
+|---|---|---|
+| `worker:dev` | Runs the **already-built** worker locally at `http://localhost:8787` | After `worker:build`, when you want to test against the local worker |
+| `worker:build:watch` | Rebuilds the worker bundle on every file save | In a separate terminal during active worker development |
+| `worker:build-context` | Regenerates `worker/docs-context.ts` from the MDX content | Rarely — only if you want to refresh the embedded docs outside of a full build |
+| `worker:build` | Runs `worker:build-context` then bundles `worker.ts` via tsup | Before `worker:dev`, or manually before deploying |
+
+> **Tip:** `pnpm run dev:with-worker` runs `worker:build`, `worker:setup-dev-vars`, `worker:build:watch`, `worker:dev`, and `next dev` all together — use that instead of managing terminals manually.
+
+### Testing
+
+| Command | What it does | When to run |
+|---|---|---|
+| `worker:test` | Runs the worker unit tests with vitest | Before deploying, or in CI |
+
+### Deployment
+
+| Command | What it does | When to run |
+|---|---|---|
+| `worker:deploy` | Runs `worker:test` → `worker:build` → `wrangler deploy` | When you want to push a new version of the worker to Cloudflare |
+
+---
+
 ## Local development
 
 **Prerequisite:** `docs/.env.local` must contain your Gemini API key.

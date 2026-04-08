@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { createContext, useContext, useState } from "react";
 import { DEFAULT_MODEL } from "../constants";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useStreamChat } from "../hooks/useStreamChat";
 import type { ChatMessage } from "../types";
 
@@ -28,18 +29,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isDrawerClosing, setIsDrawerClosing] = useState(false);
   const [entered, setEntered] = useState(false);
-  const [model, setModel] = useState(() => {
-    try {
-      return localStorage.getItem("docs_chat_model") || DEFAULT_MODEL;
-    } catch {
-      return DEFAULT_MODEL;
-    }
-  });
+  const [model, setModel] = useLocalStorage<string>(
+    "docs_chat_model",
+    DEFAULT_MODEL,
+  );
 
   const { messages, isStreaming, sendMessage, clearMessages } =
     useStreamChat(model);
-
-  console.log("messages", { messages, isStreaming });
 
   return (
     <ChatContext.Provider

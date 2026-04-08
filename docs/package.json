@@ -13,7 +13,8 @@
     "worker:build-context": "node worker/build-context.mjs",
     "worker:build": "pnpm run worker:build-context && cd worker && tsup worker.ts",
     "worker:setup-secret": "wrangler secret put GEMINI_API_KEY --config worker/wrangler.toml",
-    "worker:deploy": "pnpm run worker:build && wrangler deploy --config worker/wrangler.toml",
+    "worker:test": "vitest run worker/worker.test.ts",
+    "worker:deploy": "pnpm run worker:test && pnpm run worker:build && wrangler deploy --config worker/wrangler.toml",
     "prebuild": "node ../bin/sync-docs-version.mjs",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
@@ -38,6 +39,8 @@
     "postcss": "^8.5.8",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.2"
   },
@@ -51,6 +54,6 @@
     "pagefind": "^1.4.0",
     "tsup": "^8.0.1",
     "vitest": "^4.0.18",
-    "wrangler": "^4.79.0"
+    "wrangler": "^4.80.0"
   }
 }

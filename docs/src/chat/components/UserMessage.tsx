@@ -12,9 +12,9 @@ export function UserMessage({ message }: UserMessageProps) {
     <Message
       message={message}
       title="You"
-      containerClass="mb-4 text-gray-800 dark:text-gray-200"
-      titleClass="font-semibold mb-1"
-      contentClass="bg-gray-200 dark:bg-gray-700 rounded-lg px-2 py-1"
+      containerClass="mb-4 text-gray-800 dark:text-gray-100"
+      titleClass="font-semibold"
+      contentClass="bg-gray-100 dark:bg-neutral-800 rounded-lg px-3 py-2"
     />
   );
 }
