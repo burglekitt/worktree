@@ -6,8 +6,6 @@ import { createContext, useContext } from "react";
 
 // biome-ignore lint/suspicious/noExplicitAny: generic context holds any TanStack form instance
 const FormContext = createContext<any | null>(null);
-// biome-ignore lint/suspicious/noExplicitAny: generic context holds any TanStack field instance
-const FieldContext = createContext<any | null>(null);
 
 export function FormProvider({
   form,
@@ -23,36 +21,6 @@ export function FormProvider({
 export function useFormContext() {
   const f = useContext(FormContext);
   if (!f) throw new Error("useFormContext must be used inside a FormProvider");
-  return f;
-}
-
-export function FormField({
-  name,
-  children,
-}: {
-  name: string;
-  children: React.ReactNode;
-}) {
-  const form = useFormContext();
-  // biome-ignore lint/suspicious/noExplicitAny: form.Field type depends on form data shape unknown here
-  const Comp = (form as any).Field as React.ComponentType<any>;
-  if (!Comp) {
-    return <>{children}</>;
-  }
-
-  return (
-    <Comp name={name}>
-      {/* biome-ignore lint/suspicious/noExplicitAny: field type is resolved at usage */}
-      {(field: any) => (
-        <FieldContext.Provider value={field}>{children}</FieldContext.Provider>
-      )}
-    </Comp>
-  );
-}
-
-export function useField() {
-  const f = useContext(FieldContext);
-  if (!f) throw new Error("useField must be used inside a FormField");
   return f;
 }
 

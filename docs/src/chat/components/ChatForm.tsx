@@ -2,7 +2,8 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useEffect, useRef } from "react";
-import { FormField, FormProvider } from "../form/FormContext";
+import { FormProvider } from "../form/FormContext";
+import { FormField } from "../form/FormField";
 import { ChatInput } from "./ChatInput";
 import { ChatSubmitButton } from "./ChatSubmitButton";
 

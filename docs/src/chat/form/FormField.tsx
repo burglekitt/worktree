@@ -1,25 +1,26 @@
-"use client";
-
 import type { ReactNode } from "react";
+import { FieldContext } from "./FieldContext";
 import { useFormContext } from "./FormContext";
 
-// biome-ignore lint/suspicious/noExplicitAny: field type is resolved at call site via generic T
-interface FieldProps<T = any> {
+interface FormFieldProps {
   name: string;
-  children: (field: T) => ReactNode;
+  children: ReactNode;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: field type is resolved at call site via generic T
-export function FormField<T = any>({ name, children }: FieldProps<T>) {
+export function FormField({ name, children }: FormFieldProps) {
   const form = useFormContext();
-  if (!form) return null;
-
   // biome-ignore lint/suspicious/noExplicitAny: form.Field type depends on form data shape unknown here
-  const FieldComp = (form as any).Field;
-  if (!FieldComp) return null;
+  const Comp = (form as any).Field as React.ComponentType<any>;
+  if (!Comp) {
+    return <>{children}</>;
+  }
 
-  // biome-ignore lint/suspicious/noExplicitAny: field type resolved at call site
-  return <FieldComp name={name}>{(field: any) => children(field)}</FieldComp>;
+  return (
+    <Comp name={name}>
+      {/* biome-ignore lint/suspicious/noExplicitAny: field type is resolved at usage */}
+      {(field: any) => (
+        <FieldContext.Provider value={field}>{children}</FieldContext.Provider>
+      )}
+    </Comp>
+  );
 }
-
-export default FormField;
