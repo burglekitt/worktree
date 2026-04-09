@@ -9,7 +9,7 @@ From the **repo root**:
 
 ```bash
 pnpm install
-pnpm docs:dev        # Next.js only (no AI chat)
+pnpm docs:dev
 ```
 
 To run with the AI chat worker locally, choose based on what you are working on:

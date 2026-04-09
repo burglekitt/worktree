@@ -165,10 +165,17 @@ export function useStreamChat(model: string): UseStreamChatReturn {
     async (text: string) => {
       if (!text.trim() || isPending) return;
       const trimmed = text.trim();
-      const historySnapshot = messagesRef.current.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      // filter out any failed/warning messages and assistant messages that are still streaming or empty, so the history sent to the worker is clean and doesn't include partial assistant messages or messages that didn't go through. This also ensures the "messages" array in the UI can be more forgiving (e.g. it can keep failed/warning messages, and show the assistant message as it's streaming) without affecting the integrity of the history sent to the model.
+      const historySnapshot = messagesRef.current
+        .filter((m) => !m.isError && !m.isWarning)
+        .filter(
+          (m) =>
+            !(
+              m.role === "assistant" &&
+              (m.streaming || m.content.trim() === "")
+            ),
+        )
+        .map((m) => ({ role: m.role, content: m.content }));
       // Optimistically append the user message + assistant placeholder so the
       // loading state appears immediately, even before network round-trip.
       const assistantId = addUserAndPlaceholder(trimmed);
