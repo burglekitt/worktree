@@ -6,7 +6,6 @@ interface UseBottomScrollProps {
   endRef: RefObject<HTMLElement | null>;
   lastSnapshotRef: RefObject<string | undefined>;
   lastMsg?: ChatMessage;
-  showPendingAssistant: boolean;
 }
 
 export function useBottomScroll({
@@ -14,17 +13,14 @@ export function useBottomScroll({
   endRef,
   lastSnapshotRef,
   lastMsg,
-  showPendingAssistant,
 }: UseBottomScrollProps) {
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     const snapshot = lastMsg
-      ? `${lastMsg.id}:${lastMsg.content.length}:${String(lastMsg.streaming)}:${String(
-          showPendingAssistant,
-        )}`
-      : String(showPendingAssistant);
+      ? `${lastMsg.id}:${lastMsg.content.length}:${String(lastMsg.streaming)}`
+      : "empty";
 
     if (lastSnapshotRef.current === snapshot) return;
     lastSnapshotRef.current = snapshot;
@@ -33,14 +29,14 @@ export function useBottomScroll({
     const isAtBottom =
       el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
 
-    // If we're showing the optimistic pending assistant (thinking dots),
-    // always scroll so the user sees the placeholder immediately.
-    if (showPendingAssistant) {
+    // Placeholder just appeared (streaming, no content yet) — always scroll
+    // so the user sees the loading dots immediately after submitting.
+    if (lastMsg?.streaming && !lastMsg.content) {
       endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
       return;
     }
 
-    // If the last message is a finished assistant reply, jump to it.
+    // Finished assistant reply — jump to it unconditionally.
     if (lastMsg?.role === "assistant" && !lastMsg.streaming) {
       endRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
       return;

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import type { ChatMessage } from "../types";
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -29,11 +29,20 @@ export interface MessageHistory {
 }
 
 export function useMessageHistory(storageKey: string): MessageHistory {
-  const { value: rawMessages, setValue: setMessages } = useLocalStorage<
+  const { value: messages, setValue: setMessages } = useLocalStorage<
     ChatMessage[]
   >(storageKey, []);
-  // Sanitize on the way out — only affects the consumer view, not storage
-  const messages = sanitizeLoaded(rawMessages);
+
+  // Sanitize stale streaming flags left over from a previous session
+  // (e.g. browser closed mid-stream). Runs once per storageKey so it never
+  // strips the streaming flag from an actively-streaming placeholder.
+  useEffect(() => {
+    setMessages((prev) => {
+      const hasStale = prev.some((m) => m.streaming);
+      return hasStale ? sanitizeLoaded(prev) : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setMessages]);
 
   const addUserAndPlaceholder = useCallback(
     (userContent: string): string => {

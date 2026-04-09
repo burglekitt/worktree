@@ -8,21 +8,15 @@ import { UserMessage } from "./UserMessage";
 
 interface MessagesProps {
   messages: ChatMessage[];
-  isStreaming?: boolean;
 }
-// isThinking? need this bool between after send and waiting for message
 
-export function Messages({ messages, isStreaming = false }: MessagesProps) {
+export function Messages({ messages }: MessagesProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const lastSnapshotRef = useRef<string | undefined>(undefined);
-  const hasStreamingAssistant = messages.some(
-    (m) => m.role === "assistant" && m.streaming,
-  );
-  const showPendingAssistant = isStreaming && !hasStreamingAssistant;
 
-  // Separate the actively-streaming message from settled history so the
-  // scroll logic always uses the live value.
+  // Separate the actively-streaming message (placeholder or in-flight content)
+  // from settled history so the scroll logic always uses the live value.
   const lastMsg = messages.length ? messages[messages.length - 1] : undefined;
   const activeStreamingMsg = lastMsg?.streaming ? lastMsg : undefined;
   const historicalMessages = activeStreamingMsg
@@ -34,7 +28,6 @@ export function Messages({ messages, isStreaming = false }: MessagesProps) {
     endRef,
     lastSnapshotRef,
     lastMsg,
-    showPendingAssistant,
   });
 
   return (
@@ -50,17 +43,6 @@ export function Messages({ messages, isStreaming = false }: MessagesProps) {
           <UserMessage key={message.id} message={message} />
         ),
       )}
-      {showPendingAssistant ? (
-        <AssistantMessage
-          message={{
-            id: "pending-assistant",
-            role: "assistant",
-            content: "",
-            createdAt: Date.now(),
-            streaming: true,
-          }}
-        />
-      ) : null}
       {activeStreamingMsg && (
         <AssistantMessage
           key={activeStreamingMsg.id}
