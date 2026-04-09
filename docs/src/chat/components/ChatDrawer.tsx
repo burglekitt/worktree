@@ -126,7 +126,6 @@ export function ChatDrawer() {
                 <Drawer.Close
                   aria-label="Close chat"
                   className="p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-800 transition-colors"
-                  onClick={handleClose}
                 >
                   <XMarkIcon className="h-5 w-5" />
                 </Drawer.Close>
