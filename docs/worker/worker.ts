@@ -75,6 +75,15 @@ function checkRateLimit(request: Request, env: Record<string, string>) {
         if (now >= b.resetAtMs) rateLimitBuckets.delete(id);
       }
     }
+    // Hard ceiling: if the map is still full after pruning, the isolate is
+    // under a high-cardinality flood. Reject rather than grow unbounded.
+    if (rateLimitBuckets.size >= MAX_RATE_BUCKETS) {
+      return {
+        limited: true as const,
+        remaining: 0,
+        resetAtMs: now + windowMs,
+      };
+    }
     rateLimitBuckets.set(clientId, { count: 1, resetAtMs: now + windowMs });
     return {
       limited: false as const,

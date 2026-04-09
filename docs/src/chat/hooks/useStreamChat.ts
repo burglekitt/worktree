@@ -146,7 +146,10 @@ export function useStreamChat(model: string): UseStreamChatReturn {
             "Request timed out while waiting for model output. Please retry or switch model.",
           );
         }
-        if ((err as { name?: string }).name !== "AbortError") {
+
+        const isAbortError = (err as { name?: string }).name === "AbortError";
+
+        if (!didTimeout && !isAbortError) {
           failMessage(assistantId, "Connection error");
         }
       } finally {

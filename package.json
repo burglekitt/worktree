@@ -29,8 +29,7 @@
     "dist",
     "bin",
     "README.md",
-    "skills",
-    "!skills/_artifacts"
+    "skills"
   ],
   "keywords": [
     "git",

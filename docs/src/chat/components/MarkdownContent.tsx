@@ -10,6 +10,15 @@ import { VALID_DOC_ROUTES } from "../docs-routes.generated";
 /** GitHub Pages base — strip this prefix if the model accidentally emits full URLs. */
 const GH_PAGES_ORIGIN = "https://burglekitt.github.io/worktree";
 
+/** Allowed external origins. Localhost is included only during development. */
+const ALLOWED_EXTERNAL_ORIGINS: string[] =
+  process.env.NODE_ENV === "development"
+    ? [GH_PAGES_ORIGIN, "http://localhost:3000"]
+    : [GH_PAGES_ORIGIN];
+
+/** Only these URL schemes are permitted in external links. */
+const SAFE_PROTOCOLS = new Set(["https:", "http:", "mailto:"]);
+
 /**
  * Resolve a link href coming from the model to a known doc route, or null if
  * it should not be rendered as a link at all.
@@ -30,12 +39,24 @@ function resolveHref(
     return VALID_DOC_ROUTES.has(href) ? { internal: true, href } : null;
   }
 
-  // GitHub repo anchor links (e.g. https://github.com/burglekitt/worktree#...) — strip.
-  if (/^https?:\/\/(www\.)?github\.com\/burglekitt\/worktree/.test(href)) {
+  // Validate absolute URL: must parse, must be a safe protocol, and must
+  // originate from an allowed origin to prevent javascript:/data:/etc injection.
+  let parsed: URL;
+  try {
+    parsed = new URL(href);
+  } catch {
     return null;
   }
 
-  // Everything else (genuine external URL) — allow.
+  if (!SAFE_PROTOCOLS.has(parsed.protocol)) return null;
+
+  const origin = parsed.origin;
+  if (
+    !ALLOWED_EXTERNAL_ORIGINS.some((o) => origin === o || href.startsWith(o))
+  ) {
+    return null;
+  }
+
   return { internal: false, href: raw };
 }
 
