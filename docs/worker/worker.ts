@@ -30,6 +30,9 @@ const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 type RateBucket = { count: number; resetAtMs: number };
 const rateLimitBuckets = new Map<string, RateBucket>();
+// Prune trigger: if the map exceeds this size, sweep expired entries.
+// Prevents unbounded growth from high-cardinality / spoofed client IDs.
+const MAX_RATE_BUCKETS = 10_000;
 
 function parsePositiveInt(value: string | undefined, fallback: number): number {
   if (!value) return fallback;
@@ -66,6 +69,12 @@ function checkRateLimit(request: Request, env: Record<string, string>) {
   const bucket = rateLimitBuckets.get(clientId);
 
   if (!bucket || now >= bucket.resetAtMs) {
+    // Prune expired entries if the map is getting large. O(n) only at the cap.
+    if (rateLimitBuckets.size >= MAX_RATE_BUCKETS) {
+      for (const [id, b] of rateLimitBuckets) {
+        if (now >= b.resetAtMs) rateLimitBuckets.delete(id);
+      }
+    }
     rateLimitBuckets.set(clientId, { count: 1, resetAtMs: now + windowMs });
     return {
       limited: false as const,

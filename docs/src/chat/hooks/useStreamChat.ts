@@ -21,13 +21,21 @@ interface MutationVars {
 }
 
 export function useStreamChat(model: string): UseStreamChatReturn {
-  const history = useMessageHistory(`docs_chat_history_${model}`);
+  const {
+    messages,
+    warnMessage,
+    failMessage,
+    appendDelta,
+    addUserAndPlaceholder,
+    clearAll,
+    finalizeMessage,
+  } = useMessageHistory(`docs_chat_history_${model}`);
   const abortRef = useRef<AbortController | null>(null);
   // Stable ref so sendMessage always reads the latest messages without
   // needing to list `history.messages` as a useCallback dependency (which
   // would re-create sendMessage on every streaming delta).
-  const messagesRef = useRef(history.messages);
-  messagesRef.current = history.messages;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   const base = process.env.GEMINI_WORKER_URL || "http://localhost:8787";
 
@@ -49,17 +57,22 @@ export function useStreamChat(model: string): UseStreamChatReturn {
       const readWithTimeout = async (
         reader: ReadableStreamDefaultReader<Uint8Array>,
       ) => {
-        // Promise.race reader.read() against a timeout to detect stalled streams. We still
-        // rely on the server to send a final "done" message and close the stream, but this
-        return await Promise.race([
-          reader.read(),
-          new Promise<never>((_, reject) => {
-            setTimeout(() => {
-              didTimeout = true;
-              reject(new Error("Stream timeout"));
-            }, STREAM_IDLE_TIMEOUT_MS);
-          }),
-        ]);
+        // Idle-timeout debounce: reset the timer with every chunk. If no data
+        // arrives within STREAM_IDLE_TIMEOUT_MS the stream is considered stalled.
+        // The finally block clears the handle when reader.read() wins the race,
+        // so each call leaves exactly zero dangling timers.
+        let idleHandle: ReturnType<typeof setTimeout> | undefined;
+        const idlePromise = new Promise<never>((_, reject) => {
+          idleHandle = setTimeout(() => {
+            didTimeout = true;
+            reject(new Error("Stream timeout"));
+          }, STREAM_IDLE_TIMEOUT_MS);
+        });
+        try {
+          return await Promise.race([reader.read(), idlePromise]);
+        } finally {
+          clearTimeout(idleHandle);
+        }
       };
 
       try {
@@ -82,12 +95,12 @@ export function useStreamChat(model: string): UseStreamChatReturn {
           } catch {
             // plain-text error body
           }
-          history.warnMessage(assistantId, errMsg);
+          warnMessage(assistantId, errMsg);
           return;
         }
 
         if (!res.body) {
-          history.failMessage(assistantId, "Error: empty response body");
+          failMessage(assistantId, "Error: empty response body");
           return;
         }
 
@@ -108,11 +121,11 @@ export function useStreamChat(model: string): UseStreamChatReturn {
             switch (delta.type) {
               case "text":
                 textChunks++;
-                history.appendDelta(assistantId, delta.text);
+                appendDelta(assistantId, delta.text);
                 break;
               case "error":
                 console.error("[chat] SSE error:", delta.message);
-                history.warnMessage(assistantId, delta.message);
+                warnMessage(assistantId, delta.message);
                 return;
               case "done":
                 break outer;
@@ -128,16 +141,17 @@ export function useStreamChat(model: string): UseStreamChatReturn {
         }
       } catch (err) {
         if (didTimeout) {
-          history.warnMessage(
+          warnMessage(
             assistantId,
             "Request timed out while waiting for model output. Please retry or switch model.",
           );
-        } else if ((err as { name?: string }).name !== "AbortError") {
-          history.failMessage(assistantId, "Connection error");
+        }
+        if ((err as { name?: string }).name !== "AbortError") {
+          failMessage(assistantId, "Connection error");
         }
       } finally {
         clearTimeout(requestTimeout);
-        history.finalizeMessage(assistantId);
+        finalizeMessage(assistantId);
       }
     },
   });
@@ -154,20 +168,20 @@ export function useStreamChat(model: string): UseStreamChatReturn {
       }));
       // Optimistically append the user message + assistant placeholder so the
       // loading state appears immediately, even before network round-trip.
-      const assistantId = history.addUserAndPlaceholder(trimmed);
+      const assistantId = addUserAndPlaceholder(trimmed);
       await mutateAsync({ text: trimmed, historySnapshot, assistantId });
     },
-    [history, isPending, mutateAsync],
+    [addUserAndPlaceholder, mutateAsync, isPending],
   );
 
   const clearMessages = useCallback(() => {
     abortRef.current?.abort();
     reset();
-    history.clearAll();
-  }, [reset, history.clearAll]);
+    clearAll();
+  }, [reset, clearAll]);
 
   return {
-    messages: history.messages,
+    messages: messages,
     isStreaming: isPending,
     sendMessage,
     clearMessages,
