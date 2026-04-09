@@ -75,6 +75,8 @@ export function useStreamChat(model: string): UseStreamChatReturn {
         }
       };
 
+      let receivedText = false;
+
       try {
         const res = await fetch(base, {
           method: "POST",
@@ -107,7 +109,6 @@ export function useStreamChat(model: string): UseStreamChatReturn {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buf = "";
-        let textChunks = 0;
 
         outer: while (true) {
           const { done, value } = await readWithTimeout(reader);
@@ -120,7 +121,7 @@ export function useStreamChat(model: string): UseStreamChatReturn {
             const delta = parseGeminiSseLine(line);
             switch (delta.type) {
               case "text":
-                textChunks++;
+                receivedText = true;
                 appendDelta(assistantId, delta.text);
                 break;
               case "error":
@@ -134,7 +135,7 @@ export function useStreamChat(model: string): UseStreamChatReturn {
           }
         }
 
-        if (textChunks === 0) {
+        if (!receivedText) {
           console.warn(
             "[chat] stream completed with zero text chunks — check worker URL and model",
           );
@@ -154,7 +155,15 @@ export function useStreamChat(model: string): UseStreamChatReturn {
         }
       } finally {
         clearTimeout(requestTimeout);
-        finalizeMessage(assistantId);
+
+        // If the request was aborted before any assistant text arrived,
+        // mark the placeholder as a warning instead of leaving an empty message.
+        // Do not override a timeout warning (didTimeout handled in catch).
+        if (abort.signal.aborted && !didTimeout && !receivedText) {
+          warnMessage(assistantId, "Request cancelled");
+        } else {
+          finalizeMessage(assistantId);
+        }
       }
     },
   });
