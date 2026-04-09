@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { useId } from "react";
 import type { ChatMessage } from "../types";
 import { LoadingDots } from "./LoadingDots";
 
@@ -34,6 +35,8 @@ export function Message({
   renderContent,
 }: MessageProps) {
   const { content, streaming, createdAt, isError, isWarning } = message;
+  const titleId = useId();
+  const isoTime = new Date(createdAt).toISOString();
   const formattedTime = new Date(createdAt).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -41,8 +44,13 @@ export function Message({
 
   const header = (
     <div className="flex items-baseline justify-between mb-1">
-      <div className={titleClass}>{title}</div>
-      <time className="text-xs text-gray-400 dark:text-gray-500 ml-2">
+      <div id={titleId} className={titleClass}>
+        {title}
+      </div>
+      <time
+        dateTime={isoTime}
+        className="text-xs text-gray-400 dark:text-gray-500 ml-2"
+      >
         {formattedTime}
       </time>
     </div>
@@ -56,9 +64,9 @@ export function Message({
   const bubbleClass = `${BUBBLE_BASE_CLASS} ${stateClass} ${contentClass}`;
 
   return (
-    <div className={containerClass}>
+    <article aria-labelledby={titleId} className={containerClass}>
       {header}
-      <div className={bubbleClass}>
+      <div className={bubbleClass} aria-live="polite" aria-atomic="false">
         {streaming && !content ? (
           <div className="flex items-center gap-2 text-sm italic">
             <LoadingDots className="text-current h-6" size={12} />
@@ -70,6 +78,6 @@ export function Message({
           content
         )}
       </div>
-    </div>
+    </article>
   );
 }

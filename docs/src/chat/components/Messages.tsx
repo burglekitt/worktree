@@ -1,6 +1,7 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useRef } from "react";
+import { useBottomScroll } from "../hooks/useBottomScroll";
 import type { ChatMessage } from "../types";
 import { AssistantMessage } from "./AssistantMessage";
 import { UserMessage } from "./UserMessage";
@@ -20,40 +21,20 @@ export function Messages({ messages, isStreaming = false }: MessagesProps) {
   );
   const showPendingAssistant = isStreaming && !hasStreamingAssistant;
 
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+  // Separate the actively-streaming message from settled history so the
+  // scroll logic always uses the live value.
+  const lastMsg = messages.length ? messages[messages.length - 1] : undefined;
+  const activeStreamingMsg = lastMsg?.streaming ? lastMsg : undefined;
+  const historicalMessages = activeStreamingMsg
+    ? messages.slice(0, -1)
+    : messages;
 
-    const lastMsg = messages.length ? messages[messages.length - 1] : undefined;
-    const snapshot = lastMsg
-      ? `${lastMsg.id}:${lastMsg.content.length}:${String(lastMsg.streaming)}:${String(
-          showPendingAssistant,
-        )}`
-      : String(showPendingAssistant);
-
-    if (lastSnapshotRef.current === snapshot) return;
-    lastSnapshotRef.current = snapshot;
-
-    const threshold = 120;
-    const isAtBottom =
-      el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
-
-    // If we're showing the optimistic pending assistant (thinking dots),
-    // always scroll so the user sees the placeholder immediately.
-    if (showPendingAssistant) {
-      endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-      return;
-    }
-
-    // If the last message is a finished assistant reply, jump to it.
-    if (lastMsg?.role === "assistant" && !lastMsg.streaming) {
-      endRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-      return;
-    }
-
-    if (isAtBottom) {
-      endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
+  useBottomScroll({
+    containerRef,
+    endRef,
+    lastSnapshotRef,
+    lastMsg,
+    showPendingAssistant,
   });
 
   return (
@@ -62,7 +43,7 @@ export function Messages({ messages, isStreaming = false }: MessagesProps) {
       className="flex-1 overflow-y-auto p-4 scroll-smooth"
       style={{ WebkitOverflowScrolling: "touch" }}
     >
-      {messages.map((message) =>
+      {historicalMessages.map((message) =>
         message.role === "assistant" ? (
           <AssistantMessage key={message.id} message={message} />
         ) : (
@@ -80,6 +61,12 @@ export function Messages({ messages, isStreaming = false }: MessagesProps) {
           }}
         />
       ) : null}
+      {activeStreamingMsg && (
+        <AssistantMessage
+          key={activeStreamingMsg.id}
+          message={activeStreamingMsg}
+        />
+      )}
       <div ref={endRef} />
     </div>
   );

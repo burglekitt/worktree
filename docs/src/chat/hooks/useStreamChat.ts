@@ -49,21 +49,17 @@ export function useStreamChat(model: string): UseStreamChatReturn {
       const readWithTimeout = async (
         reader: ReadableStreamDefaultReader<Uint8Array>,
       ) => {
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-        try {
-          return await Promise.race([
-            reader.read(),
-            new Promise<never>((_, reject) => {
-              timeoutId = setTimeout(() => {
-                didTimeout = true;
-                abort.abort();
-                reject(new Error("Stream timeout"));
-              }, STREAM_IDLE_TIMEOUT_MS);
-            }),
-          ]);
-        } finally {
-          if (timeoutId) clearTimeout(timeoutId);
-        }
+        // Promise.race reader.read() against a timeout to detect stalled streams. We still
+        // rely on the server to send a final "done" message and close the stream, but this
+        return await Promise.race([
+          reader.read(),
+          new Promise<never>((_, reject) => {
+            setTimeout(() => {
+              didTimeout = true;
+              reject(new Error("Stream timeout"));
+            }, STREAM_IDLE_TIMEOUT_MS);
+          }),
+        ]);
       };
 
       try {
