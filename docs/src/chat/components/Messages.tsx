@@ -7,10 +7,16 @@ import { UserMessage } from "./UserMessage";
 
 interface MessagesProps {
   messages: ChatMessage[];
+  isThinking?: boolean;
   isStreaming?: boolean;
 }
+// isThinking? need this bool between after send and waiting for message
 
-export function Messages({ messages, isStreaming = false }: MessagesProps) {
+export function Messages({
+  messages,
+  isThinking = false, // OR Can this be listend to somehow?
+  isStreaming = false,
+}: MessagesProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const lastSnapshotRef = useRef<string | undefined>(undefined);

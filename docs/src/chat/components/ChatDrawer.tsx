@@ -4,9 +4,11 @@ import { Button } from "@base-ui/react";
 import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
 import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { cn } from "../../utils";
 import { FREE_MODELS } from "../constants";
+import { useEnterAnimation } from "../hooks/useEnterAnimation";
+import { useGlobalKeyDown } from "../hooks/useGlobalKeyDown";
 import { useChatContext } from "./ChatContext";
 import { ChatModelSelect } from "./ChatModelSelect";
 import { ChatPanel } from "./ChatPanel";
@@ -58,28 +60,20 @@ export function ChatDrawer() {
   }
 
   // keyboard: open chat with Ctrl+K for convenience
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        if (isDrawerOpen) handleClose();
-        else handleOpen();
+  useGlobalKeyDown({
+    key: "k",
+    ctrlOrMeta: true,
+    callback: () => {
+      if (isDrawerOpen) {
+        handleClose();
+        return;
       }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [isDrawerOpen, handleClose, handleOpen]);
+      handleOpen();
+    },
+  });
 
   // Drive entrance animation via two-phase mount.
-  useEffect(() => {
-    if (!isDrawerOpen) {
-      setEntered(false);
-      return;
-    }
-    setEntered(false);
-    const raf = requestAnimationFrame(() => setEntered(true));
-    return () => cancelAnimationFrame(raf);
-  }, [isDrawerOpen, setEntered]);
+  useEnterAnimation(isDrawerOpen, setEntered);
 
   return (
     <Drawer.Root
@@ -107,7 +101,7 @@ export function ChatDrawer() {
               "z-[9999]",
               "w-[400px] max-w-full h-full",
               "transform-gpu",
-              "webkitbackface-visibility-hidden",
+              "[-webkit-backface-visibility:hidden]",
               "bg-gray-50 dark:bg-neutral-950",
               "border-l border-gray-200 dark:border-neutral-800",
               "flex flex-col shadow-2xl text-gray-900 dark:text-gray-100",
