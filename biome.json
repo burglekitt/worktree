@@ -1,5 +1,8 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.6/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+  "plugins": [
+    "./node_modules/@burglekitt/gmt-biome/plugins/all.grit"
+  ],
   "vcs": {
     "enabled": true,
     "clientKind": "git",

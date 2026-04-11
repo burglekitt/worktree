@@ -88,7 +88,7 @@ const maintainers = contributors
     const url =
       typeof contributor.url === "string" ? contributor.url.trim() : "";
 
-    if (!name || !url || !url.includes("github.com/")) return null;
+    if (!name || !url?.includes("github.com/")) return null;
 
     const githubUsername = url.replace(/\/$/, "").split("/").pop();
     if (!githubUsername) return null;
