@@ -79,7 +79,6 @@ export function ChatDrawer() {
     <Drawer.Root
       open={isDrawerOpen}
       onOpenChange={(v) => (v ? handleOpen() : handleClose())}
-      swipeDirection="right"
     >
       <ChatTrigger />
 
