@@ -2,9 +2,10 @@ import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import { Layout } from "nextra-theme-docs";
 import type { ReactNode } from "react";
+import { Chat } from "../chat/components/Chat";
 import { Footer } from "../components/Footer";
 import { Navbar } from "../components/Navbar";
-import "nextra-theme-docs/style.css";
+import "../styles/globals.css";
 
 export { metadata } from "../lib/site-meta";
 
@@ -17,7 +18,13 @@ export default async function RootLayout({
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head />
       <body>
+        <Chat />
         <Layout
+          themeSwitch={{
+            dark: "Dark",
+            light: "Light",
+            system: "System",
+          }}
           navbar={<Navbar />}
           pageMap={await getPageMap()}
           footer={<Footer />}

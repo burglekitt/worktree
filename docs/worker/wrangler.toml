@@ -1,0 +1,20 @@
+name = "worktree-gemini-proxy"
+main = "dist/worker.js"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+# Live URL: https://worktree-gemini-proxy.burglekitt.workers.dev
+
+# Find your account ID: wrangler whoami  OR  https://dash.cloudflare.com → right sidebar.
+# Uncomment and fill in before first deploy:
+# account_id = ""
+
+[dev]
+# Pin the local dev port so the Next.js frontend always finds the worker.
+# If 8787 is busy, kill the other process rather than silently moving ports.
+port = 8787
+
+[vars]
+# Non-secret env vars go here
+
+# Secrets are set via: pnpm wrangler secret put GEMINI_API_KEY

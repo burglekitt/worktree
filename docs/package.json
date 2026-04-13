@@ -4,9 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "predev": "node ../bin/sync-docs-version.mjs",
+    "predev": "pnpm -C .. run docs:sync-version",
     "dev": "next dev --turbopack",
-    "prebuild": "node ../bin/sync-docs-version.mjs",
+    "dev:local": "pnpm run worker:build && pnpm run worker:setup-dev-vars && concurrently -k -n worker,docs \"pnpm run worker:dev\" \"GEMINI_WORKER_URL=http://localhost:8787 next dev --turbopack\"",
+    "dev:local:watch": "pnpm run worker:build && pnpm run worker:setup-dev-vars && concurrently -k -n watch,worker,docs \"pnpm run worker:build:watch\" \"pnpm run worker:dev\" \"GEMINI_WORKER_URL=http://localhost:8787 next dev --turbopack\"",
+    "worker:dev": "wrangler dev worker/dist/worker.js --local --config worker/wrangler.toml --show-interactive-dev-session=false",
+    "worker:build:watch": "cd worker && tsup worker.ts --watch",
+    "worker:setup-dev-vars": "node worker/setup-dev-vars.mjs",
+    "worker:build-context": "node worker/build-context.mjs",
+    "worker:build": "pnpm run worker:build-context && cd worker && tsup worker.ts",
+    "worker:setup-secret": "wrangler secret put GEMINI_API_KEY --config worker/wrangler.toml",
+    "worker:test": "vitest run worker/worker.test.ts",
+    "worker:deploy": "pnpm run worker:test && pnpm run worker:build && wrangler deploy --config worker/wrangler.toml",
+    "prebuild": "pnpm -C .. run docs:sync-version",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
     "test": "vitest run"
@@ -16,19 +26,36 @@
   "license": "ISC",
   "packageManager": "pnpm@10.32.1",
   "dependencies": {
+    "@base-ui/react": "^1.3.0",
+    "@burglekitt/gmt": "^1.1.0",
+    "@heroicons/react": "^2.2.0",
+    "@tailwindcss/postcss": "^4.2.2",
+    "@tanstack/react-form": "^1.28.5",
+    "@tanstack/react-form-devtools": "^0.2.19",
+    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-store": "^0.9.3",
     "next": "^16.1.6",
     "nextra": "^4.6.1",
     "nextra-theme-docs": "^4.6.1",
+    "postcss": "^8.5.8",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
+    "@tanstack/react-devtools": "^0.10.2",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
-    "@types/react-dom": "^19.1.9",
     "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.1.9",
+    "concurrently": "^8.2.0",
     "jsdom": "^26.1.0",
     "pagefind": "^1.4.0",
-    "vitest": "^4.0.18"
+    "tsup": "^8.0.1",
+    "vitest": "^4.0.18",
+    "wrangler": "^4.81.0"
   }
 }

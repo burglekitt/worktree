@@ -43,6 +43,10 @@ jobs:
       - run: pnpm docs:test
 
       - run: pnpm docs:build
+        env:
+          # Public URL of the deployed Cloudflare Worker — baked into the static bundle at build time.
+          # Set as a repository variable (not secret) in GH repo settings → Variables.
+          GEMINI_WORKER_URL: ${{ vars.GEMINI_WORKER_URL }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

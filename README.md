@@ -224,5 +224,6 @@ MIT
 - [x] Add `list` command to list all worktrees
 - [x] Add `open` command to open a worktree in a code editor
 - [x] Add `cleanup` command to cleanup stale worktrees
-- [ ] Integrate with JIRA for automated branch naming
+- [x] Integrate with GitHub for automated branch naming
+- [x] Integrate with JIRA for automated branch naming
 - [ ] Integrate with ClickUp for automated branch naming

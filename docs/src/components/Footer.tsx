@@ -1,3 +1,4 @@
+import { getToday } from "@burglekitt/gmt";
 import { Footer as NextraFooter } from "nextra-theme-docs";
 import {
   cliVersion,
@@ -9,6 +10,7 @@ import {
 import { ProfileAvatarLink } from "./ProfileAvatarLink";
 
 export function Footer() {
+  const year = getToday().split("-")[0];
   return (
     <NextraFooter>
       <div style={{ display: "grid", gap: "0.5rem" }}>
@@ -25,7 +27,7 @@ export function Footer() {
             avatarUrl={projectOwnerAvatarUrl}
             target="_blank"
           />
-          <span>{`MIT ${new Date().getFullYear()} © ${projectOwnerName}`}</span>
+          <span>{`MIT ${year} © ${projectOwnerName}`}</span>
         </div>
         <div>CLI Version: v{cliVersion}</div>
         <div>

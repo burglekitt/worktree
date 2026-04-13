@@ -10,6 +10,10 @@ const workspaceRoot = path.resolve(currentDir, "..");
 export default withNextra({
   output: "export",
   basePath: isProduction ? "/worktree" : "",
+  // The worker URL is sourced from GEMINI_WORKER_URL, which should be set in .env.local
+  env: {
+    GEMINI_WORKER_URL: process.env.GEMINI_WORKER_URL ?? "",
+  },
   images: {
     unoptimized: true,
     remotePatterns: [
