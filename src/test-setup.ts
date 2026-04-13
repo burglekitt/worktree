@@ -35,4 +35,4 @@ function expectCommands(...commands: string[]) {
 }
 
 // Export the mock and helper for use in tests
-export { mockCmd, expectCommands };
+export { expectCommands, mockCmd };

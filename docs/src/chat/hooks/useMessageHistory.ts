@@ -1,9 +1,10 @@
+import { getUnixNow } from "@burglekitt/gmt";
 import { useCallback, useEffect } from "react";
 import type { ChatMessage } from "../types";
 import { useLocalStorage } from "./useLocalStorage";
 
 function makeId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  return `${getUnixNow()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
 /** Strip messages that were mid-stream when the page last closed. */
@@ -47,15 +48,21 @@ export function useMessageHistory(storageKey: string): MessageHistory {
   const addUserAndPlaceholder = useCallback(
     (userContent: string): string => {
       const assistantId = makeId();
-      const now = Date.now();
+
+      const now = getUnixNow();
       setMessages((prev) => [
         ...sanitizeLoaded(prev),
-        { id: makeId(), role: "user", content: userContent, createdAt: now },
+        {
+          id: makeId(),
+          role: "user",
+          content: userContent,
+          createdAt: now as number,
+        },
         {
           id: assistantId,
           role: "assistant",
           content: "",
-          createdAt: now,
+          createdAt: now as number,
           streaming: true,
         },
       ]);
