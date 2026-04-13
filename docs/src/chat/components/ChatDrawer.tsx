@@ -91,7 +91,7 @@ export function ChatDrawer() {
               : "opacity-0 pointer-events-none"
           }`}
         />
-        <Drawer.Viewport className="z-50">
+        <Drawer.Viewport className="z-50" data-base-ui-swipe-ignore>
           <Drawer.Popup
             ref={popupRef}
             className={cn(
