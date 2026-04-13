@@ -16,7 +16,7 @@
     "worker:setup-secret": "wrangler secret put GEMINI_API_KEY --config worker/wrangler.toml",
     "worker:test": "vitest run worker/worker.test.ts",
     "worker:deploy": "pnpm run worker:test && pnpm run worker:build && wrangler deploy --config worker/wrangler.toml",
-    "prebuild": "pnpm -C .. run docs:sync-version",
+    "prebuild": "pnpm -C .. run docs:sync-version && pnpm run worker:build-context",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
     "test": "vitest run"
