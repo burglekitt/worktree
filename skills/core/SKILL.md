@@ -10,7 +10,7 @@ description: >
   .env.local copying into new worktrees.
 type: core
 library: '@burglekitt/worktree'
-library_version: "1.2.0"
+library_version: "1.2.1"
 sources:
   - "burglekitt/worktree:README.md"
   - "burglekitt/worktree:docs/src/app/docs/commands/branch/page.mdx"
