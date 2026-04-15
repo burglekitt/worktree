@@ -1,6 +1,6 @@
 {
   "name": "@burglekitt/worktree",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A CLI tool for managing git worktrees with enhanced workflow features",
   "main": "./bin/run.js",
   "type": "module",
