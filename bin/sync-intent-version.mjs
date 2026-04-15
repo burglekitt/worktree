@@ -22,16 +22,24 @@ const updatedSkillMd = skillMdContent.replace(
   `$1"${rootVersion}"`,
 );
 
-if (updatedSkillMd === skillMdContent && !skillMdContent.match(/^library_version:/m)) {
-  throw new Error("skills/core/SKILL.md: could not find library_version field.");
+if (
+  updatedSkillMd === skillMdContent &&
+  !skillMdContent.match(/^library_version:/m)
+) {
+  throw new Error(
+    "skills/core/SKILL.md: could not find library_version field.",
+  );
 }
 
 const updatedSkillTree = skillTreeContent.replace(
-  /^(  version:\s*)["']?[^"'\s]+["']?\s*$/m,
+  /^( {2}version:\s*)["']?[^"'\s]+["']?\s*$/m,
   `$1'${rootVersion}'`,
 );
 
-if (updatedSkillTree === skillTreeContent && !skillTreeContent.match(/^  version:/m)) {
+if (
+  updatedSkillTree === skillTreeContent &&
+  !skillTreeContent.match(/^ {2}version:/m)
+) {
   throw new Error(
     "skills/_artifacts/skill_tree.yaml: could not find library.version field.",
   );
