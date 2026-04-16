@@ -32,6 +32,13 @@ jobs:
         run: git diff --exit-code -- docs/src/lib/site-meta.ts
       - name: Verify skill files are in sync with package.json
         run: git diff --exit-code -- skills/core/SKILL.md skills/_artifacts/skill_tree.yaml
+      - name: Secret scan - detect accidental API keys
+        run: |
+          if git grep -n "GEMINI_API""_KEY=AI" -- ':!.github/workflows/' >/dev/null 2>&1; then
+            echo "ERROR: GEMINI_API_KEY value found in repository; remove it and rotate the key."
+            git --no-pager grep -n "GEMINI_API""_KEY=AI" -- ':!.github/workflows/'
+            exit 1
+          fi
       - run: pnpm docs:test
       - run: pnpm format
       - run: pnpm lint
