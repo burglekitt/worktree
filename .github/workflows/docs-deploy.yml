@@ -9,7 +9,7 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
-      - "bin/sync-docs-version.mjs"
+      - "scripts/sync-docs-version.mjs"
       - ".github/workflows/docs-deploy.yml"
   workflow_dispatch:
 
