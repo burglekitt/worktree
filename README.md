@@ -1,17 +1,5 @@
 # Worktree
 
-> ## ⚠️ Deprecation Notice
->
-> This package and repository have moved. **`worktree` is now maintained under the
-> [northguild](https://github.com/northguild) organization.**
->
-> - **New repository:** https://github.com/northguild/worktree
-> - **Installation / usage:** unchanged — `npx run-cv <name>` still works as before.
->
-> This `northguild/worktree-cv` repository and its published package are deprecated and
-> will receive no further updates. Please update any bookmarks, forks, and CI
-> references to point at **`northguild/worktree`**.
-
 `worktree` is a CLI for people who use Git worktrees as part of their daily development flow and do not want to keep typing the same setup, cleanup, and editor-opening commands over and over.
 
 ![Worktree](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNW51dHJlNHRzYnRwd3c3ZWZ0dzllZTB1d3VnaGQxd2s4eDJlbDhnaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lqT2GstnDBVJE6qfkK/giphy.gif)
