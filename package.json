@@ -1,6 +1,6 @@
 {
   "name": "@northguild/worktree",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "A CLI tool for managing git worktrees with enhanced workflow features",
   "main": "./bin/run.js",
   "type": "module",
@@ -35,7 +35,6 @@
     "README.md",
     "skills"
   ],
-  "deprecated": "This package has moved to @northguild/worktree. Future development continues under @northguild/worktree.",
   "keywords": [
     "git",
     "worktree",
