@@ -10,7 +10,7 @@ description: >
   .env.local copying into new worktrees.
 type: core
 library: '@northguild/worktree'
-library_version: "1.2.5"
+library_version: "1.2.6"
 sources:
   - "northguild/worktree:README.md"
   - "northguild/worktree:docs/src/app/docs/commands/branch/page.mdx"
