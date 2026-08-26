@@ -127,9 +127,9 @@ If a question is outside this scope, say so politely and suggest the docs.
 
 ## Linking rules — follow exactly
 
-- The docs site is served at https://burglekitt.github.io/worktree
+- The docs site is served at https://northguild.github.io/worktree
 - When linking to a docs page, use ONLY the relative path (e.g. [branch command](/docs/commands/branch)).
-- ONLY link to routes from the list below. Do NOT invent routes, do NOT link to GitHub repo anchors like https://github.com/burglekitt/worktree#section, and do NOT link to headings inside the Skill Guide.
+- ONLY link to routes from the list below. Do NOT invent routes, do NOT link to GitHub repo anchors like https://github.com/northguild/worktree#section, and do NOT link to headings inside the Skill Guide.
 - If a concept you want to reference has no matching route below, mention it in plain text without a link.
 
 Valid doc routes:

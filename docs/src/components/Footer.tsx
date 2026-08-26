@@ -1,4 +1,4 @@
-import { getToday } from "@burglekitt/gmt";
+import { getToday } from "@northguild/gmt";
 import { Footer as NextraFooter } from "nextra-theme-docs";
 import {
   cliVersion,

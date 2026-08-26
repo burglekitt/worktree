@@ -92,7 +92,7 @@ pnpm --filter docs run dev
 | Value | Where it comes from | Effect |
 |---|---|---|
 | `http://localhost:8787` | Set explicitly by `dev:local` / `dev:local:watch` at startup | Next.js sends chat requests to your local `wrangler dev` instance |
-| `https://worktree-gemini-proxy.burglekitt.workers.dev` | GitHub repo variable, baked in at build time by `docs-deploy.yml` | The production static bundle hits the live Cloudflare Worker |
+| `https://worktree-gemini-proxy.northguild.workers.dev` | GitHub repo variable, baked in at build time by `docs-deploy.yml` | The production static bundle hits the live Cloudflare Worker |
 | *(unset)* | — | Next.js falls back to `http://localhost:8787` |
 
 The variable is **public** — it is just a URL, not a secret. The API key never leaves Cloudflare.
@@ -100,7 +100,7 @@ The variable is **public** — it is just a URL, not a secret. The API key never
 ## First-time Cloudflare deployment
 
 > **Done for this project.** The worker is live at
-> `https://worktree-gemini-proxy.burglekitt.workers.dev`.
+> `https://worktree-gemini-proxy.northguild.workers.dev`.
 > Steps below are for reference or if you need to redo from scratch.
 
 ### 1. Find your Cloudflare Account ID
@@ -145,7 +145,7 @@ then deploys. On success wrangler prints:
 
 ```
 Deployed worktree-gemini-proxy triggers
-  https://worktree-gemini-proxy.burglekitt.workers.dev
+  https://worktree-gemini-proxy.northguild.workers.dev
 ```
 
 ### 5. Set the GitHub repo variable
@@ -155,7 +155,7 @@ Variables**, add:
 
 | Name | Value |
 |---|---|
-| `GEMINI_WORKER_URL` | `https://worktree-gemini-proxy.burglekitt.workers.dev` |
+| `GEMINI_WORKER_URL` | `https://worktree-gemini-proxy.northguild.workers.dev` |
 
 ### 6. Trigger a docs rebuild
 
@@ -178,7 +178,7 @@ deployed worker always has up-to-date docs content embedded in the system prompt
 ## CORS
 
 The worker allows requests from:
-- `https://burglekitt.github.io` — production GitHub Pages
+- `https://northguild.github.io` — production GitHub Pages
 - `http://localhost:3000` — local Next.js dev
 
 All other origins receive the production origin in `Access-Control-Allow-Origin`,

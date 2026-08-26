@@ -14,16 +14,16 @@ describe("ProfileAvatarLink", () => {
   it("renders avatar link", () => {
     render(
       <ProfileAvatarLink
-        href="https://github.com/burglekitt"
-        name="burglekitt"
-        avatarUrl="https://github.com/burglekitt.png?size=64"
+        href="https://github.com/northguild"
+        name="northguild"
+        avatarUrl="https://github.com/northguild.png?size=64"
       />,
     );
 
     const link = screen.getByRole("link");
-    const image = screen.getByLabelText("burglekitt");
+    const image = screen.getByLabelText("northguild");
 
-    expect(link).toHaveAttribute("href", "https://github.com/burglekitt");
+    expect(link).toHaveAttribute("href", "https://github.com/northguild");
     expect(image).toBeInTheDocument();
   });
 
@@ -37,9 +37,9 @@ describe("ProfileAvatarLink", () => {
   `("sets target attribute when target is $target", ({ target }) => {
     render(
       <ProfileAvatarLink
-        href="https://github.com/burglekitt"
-        name="burglekitt"
-        avatarUrl="https://github.com/burglekitt.png?size=64"
+        href="https://github.com/northguild"
+        name="northguild"
+        avatarUrl="https://github.com/northguild.png?size=64"
         target={target}
       />,
     );

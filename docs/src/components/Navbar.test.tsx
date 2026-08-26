@@ -32,9 +32,9 @@ describe("Navbar", () => {
     expect(screen.getByText("Worktree")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Project Link" })).toHaveAttribute(
       "href",
-      "https://github.com/burglekitt/worktree",
+      "https://github.com/northguild/worktree",
     );
-    expect(screen.getByRole("link", { name: "burglekitt" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "northguild" })).toHaveAttribute(
       "href",
       "/",
     );

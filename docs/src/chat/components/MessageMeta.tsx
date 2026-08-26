@@ -4,7 +4,7 @@ import {
   convertUnixToPlainTime,
   convertUnixToUtc,
   formatTime,
-} from "@burglekitt/gmt";
+} from "@northguild/gmt";
 
 interface MessageMetaProps {
   titleId: string;

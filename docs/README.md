@@ -1,7 +1,7 @@
 # Worktree Docs Site
 
 Next.js / Nextra documentation site for the Worktree CLI, deployed to GitHub Pages at
-`https://burglekitt.github.io/worktree/docs`.
+`https://northguild.github.io/worktree/docs`.
 
 ## Quick start
 
@@ -176,8 +176,8 @@ rendering:
 | Link type | Outcome |
 |---|---|
 | Relative path in `VALID_DOC_ROUTES` | Rendered as a `<Link>` (internal navigation) |
-| Full GH Pages URL (`https://burglekitt.github.io/worktree/...`) | Stripped to relative path, then same check as above |
-| GitHub repo anchor (`github.com/burglekitt/worktree#...`) | Rendered as plain text — no link |
+| Full GH Pages URL (`https://northguild.github.io/worktree/...`) | Stripped to relative path, then same check as above |
+| GitHub repo anchor (`github.com/northguild/worktree#...`) | Rendered as plain text — no link |
 | Any other relative path not in the route list | Rendered as plain text — no link |
 | Any other external URL | Rendered as `<a target="_blank">` |
 

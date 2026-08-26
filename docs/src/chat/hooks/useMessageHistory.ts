@@ -1,4 +1,4 @@
-import { getUnixNow } from "@burglekitt/gmt";
+import { getUnixNow } from "@northguild/gmt";
 import { useCallback, useEffect } from "react";
 import type { ChatMessage } from "../types";
 import { useLocalStorage } from "./useLocalStorage";

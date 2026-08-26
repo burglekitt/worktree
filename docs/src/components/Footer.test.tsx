@@ -26,9 +26,9 @@ describe("Footer", () => {
     expect(screen.getByText(/CLI Version: v\d+\.\d+\.\d+/)).toBeInTheDocument();
     expect(screen.getByText("Maintainers:")).toBeInTheDocument();
 
-    const orgLink = screen.getByRole("link", { name: /burglekitt/ });
+    const orgLink = screen.getByRole("link", { name: /northguild/ });
     expect(orgLink).toHaveAttribute("target", "_blank");
-    expect(orgLink).toHaveAttribute("href", "https://github.com/burglekitt");
+    expect(orgLink).toHaveAttribute("href", "https://github.com/northguild");
 
     expect(
       screen.getByRole("link", { name: /Baldur Páll Hólmgeirsson/ }),

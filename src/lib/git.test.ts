@@ -59,8 +59,8 @@ describe("git config", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     expectCommands(
-      "git config burglekitt.worktree.defaultSourceBranch",
-      'git config burglekitt.worktree.codeEditor "code"',
+      "git config northguild.worktree.defaultSourceBranch",
+      'git config northguild.worktree.codeEditor "code"',
     );
   });
 
@@ -70,7 +70,7 @@ describe("git config", () => {
     const value = await gitGetConfigValue("defaultSourceBranch");
 
     expect(cmdSpy).toHaveBeenCalledWith(
-      "git config burglekitt.worktree.defaultSourceBranch",
+      "git config northguild.worktree.defaultSourceBranch",
     );
     expect(value).toBe("origin/main");
   });
@@ -81,7 +81,7 @@ describe("git config", () => {
     const value = await gitGetConfigValue("defaultSourceBranch");
 
     expect(cmdSpy).toHaveBeenCalledWith(
-      "git config burglekitt.worktree.defaultSourceBranch",
+      "git config northguild.worktree.defaultSourceBranch",
     );
     expect(value).toBe("");
   });
@@ -92,7 +92,7 @@ describe("git config", () => {
     await gitSetConfigValue("codeEditor", "code");
 
     expect(cmdSpy).toHaveBeenCalledWith(
-      'git config burglekitt.worktree.codeEditor "code"',
+      'git config northguild.worktree.codeEditor "code"',
     );
   });
 });

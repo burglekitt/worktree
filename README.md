@@ -8,7 +8,7 @@
 > - **New repository:** https://github.com/northguild/worktree
 > - **Installation / usage:** unchanged — `npx run-cv <name>` still works as before.
 >
-> This `burglekitt/worktree-cv` repository and its published package are deprecated and
+> This `northguild/worktree-cv` repository and its published package are deprecated and
 > will receive no further updates. Please update any bookmarks, forks, and CI
 > references to point at **`northguild/worktree`**.
 
