@@ -1,7 +1,7 @@
 ---
 name: core
 description: >
-  Complete usage guide for @burglekitt/worktree. Covers install, first-time
+  Complete usage guide for @northguild/worktree. Covers install, first-time
   setup with worktree config (defaultSourceBranch, codeEditor, github.token,
   jira.host, jira.email, jira.apiToken, branchPrefix.feature,
   branchPrefix.bugfix, branchPrefix.chore), worktree branch, worktree checkout,
@@ -9,37 +9,37 @@ description: >
   --github issue-to-branch, --jira issue-to-branch, and automatic .env /
   .env.local copying into new worktrees.
 type: core
-library: '@burglekitt/worktree'
+library: '@northguild/worktree'
 library_version: "1.2.5"
 sources:
-  - "burglekitt/worktree:README.md"
-  - "burglekitt/worktree:docs/src/app/docs/commands/branch/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/commands/checkout/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/commands/cleanup/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/commands/config/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/commands/list/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/commands/open/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/commands/remove/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/configuration/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/guides/github-issue-integration/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/guides/jira-integration/page.mdx"
-  - "burglekitt/worktree:docs/src/app/docs/guides/env-files/page.mdx"
-  - "burglekitt/worktree:src/commands/branch.ts"
-  - "burglekitt/worktree:src/lib/git.ts"
-  - "burglekitt/worktree:src/lib/validators.ts"
+  - "northguild/worktree:README.md"
+  - "northguild/worktree:docs/src/app/docs/commands/branch/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/commands/checkout/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/commands/cleanup/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/commands/config/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/commands/list/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/commands/open/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/commands/remove/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/configuration/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/guides/github-issue-integration/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/guides/jira-integration/page.mdx"
+  - "northguild/worktree:docs/src/app/docs/guides/env-files/page.mdx"
+  - "northguild/worktree:src/commands/branch.ts"
+  - "northguild/worktree:src/lib/git.ts"
+  - "northguild/worktree:src/lib/validators.ts"
 ---
 
-# @burglekitt/worktree
+# @northguild/worktree
 
 CLI wrapper for `git worktree` that turns the common branch-create,
 env-copy, editor-open, and cleanup cycle into single commands. Config
-is stored in local git config under `burglekitt.worktree.*`. Worktrees
+is stored in local git config under `northguild.worktree.*`. Worktrees
 are created in a sibling directory named `<repo>.worktrees/`.
 
 ## Setup
 
 ```bash
-npm install -g @burglekitt/worktree
+npm install -g @northguild/worktree
 
 # Run once inside your git repository
 worktree config
@@ -118,7 +118,7 @@ worktree cleanup --force                      # skip confirmation
 ## Configuration Reference
 
 All keys are stored via `worktree config <key> <value>` in git config
-under `burglekitt.worktree.*`.
+under `northguild.worktree.*`.
 
 | Key | Example value | Required for |
 |---|---|---|
@@ -196,14 +196,14 @@ Source: `src/lib/git.ts` — `gitGetRootPath()`
 Wrong:
 
 ```bash
-npm install -g @burglekitt/worktree
+npm install -g @northguild/worktree
 worktree branch feature/x
 ```
 
 Correct:
 
 ```bash
-npm install -g @burglekitt/worktree
+npm install -g @northguild/worktree
 worktree config          # run once per repo
 worktree branch feature/x
 ```

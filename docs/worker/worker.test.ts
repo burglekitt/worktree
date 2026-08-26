@@ -20,7 +20,7 @@ function postReq(opts: {
 }): Request {
   const {
     url = "https://worker.example.com/",
-    origin = "https://burglekitt.github.io",
+    origin = "https://northguild.github.io",
     body,
     clientIp,
   } = opts;
@@ -55,13 +55,13 @@ describe("worker — method guards", () => {
     const res = await worker.fetch(
       new Request("https://worker.example.com/", {
         method: "OPTIONS",
-        headers: { Origin: "https://burglekitt.github.io" },
+        headers: { Origin: "https://northguild.github.io" },
       }),
       ENV,
     );
     expect(res.status).toBe(204);
     expect(res.headers.get("Access-Control-Allow-Origin")).toBe(
-      "https://burglekitt.github.io",
+      "https://northguild.github.io",
     );
   });
 
@@ -69,7 +69,7 @@ describe("worker — method guards", () => {
     const res = await worker.fetch(
       new Request("https://worker.example.com/", {
         method: "GET",
-        headers: { Origin: "https://burglekitt.github.io" },
+        headers: { Origin: "https://northguild.github.io" },
       }),
       ENV,
     );
@@ -91,7 +91,7 @@ describe("worker — request validation", () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Origin: "https://burglekitt.github.io",
+          Origin: "https://northguild.github.io",
         },
         body: "not-json",
       }),
@@ -216,7 +216,7 @@ describe("worker — happy path", () => {
     expect(res.headers.get("Content-Type")).toBe("text/event-stream");
     expect(res.headers.get("Cache-Control")).toBe("no-cache");
     expect(res.headers.get("Access-Control-Allow-Origin")).toBe(
-      "https://burglekitt.github.io",
+      "https://northguild.github.io",
     );
     const text = await res.text();
     expect(text).toContain('"text":"hello"');
@@ -299,7 +299,7 @@ describe("worker — CORS", () => {
     );
   });
 
-  it("disallowed origin falls back to burglekitt.github.io", async () => {
+  it("disallowed origin falls back to northguild.github.io", async () => {
     const res = await worker.fetch(
       new Request("https://worker.example.com/", {
         method: "OPTIONS",
@@ -308,7 +308,7 @@ describe("worker — CORS", () => {
       ENV,
     );
     expect(res.headers.get("Access-Control-Allow-Origin")).toBe(
-      "https://burglekitt.github.io",
+      "https://northguild.github.io",
     );
   });
 });

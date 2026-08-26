@@ -14,14 +14,14 @@ import { strToNum } from "./utils.js";
 
 export async function gitGetConfigValue(name: ConfigName) {
   try {
-    return await cmd(`git config burglekitt.worktree.${name}`);
+    return await cmd(`git config northguild.worktree.${name}`);
   } catch {
     return "";
   }
 }
 
 export async function gitSetConfigValue(name: ConfigName, value: string) {
-  await cmd(`git config burglekitt.worktree.${name} "${value}"`);
+  await cmd(`git config northguild.worktree.${name} "${value}"`);
 }
 
 async function gitCmdShowTopLevel() {

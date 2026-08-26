@@ -35,9 +35,9 @@ describe("Jira integration", () => {
 
   it("fetches issue info using jira.host, jira.email and jira.apiToken", async () => {
     expectCommands(
-      "git config burglekitt.worktree.jira.host",
-      "git config burglekitt.worktree.jira.email",
-      "git config burglekitt.worktree.jira.apiToken",
+      "git config northguild.worktree.jira.host",
+      "git config northguild.worktree.jira.email",
+      "git config northguild.worktree.jira.apiToken",
     );
 
     const cmdSpy = vi.spyOn(cli, "cmd");
@@ -69,9 +69,9 @@ describe("Jira integration", () => {
 
   it("throws a helpful error when jira.host is missing", async () => {
     expectCommands(
-      "git config burglekitt.worktree.jira.host",
-      "git config burglekitt.worktree.jira.email",
-      "git config burglekitt.worktree.jira.apiToken",
+      "git config northguild.worktree.jira.host",
+      "git config northguild.worktree.jira.email",
+      "git config northguild.worktree.jira.apiToken",
     );
 
     vi.spyOn(cli, "cmd")
@@ -86,9 +86,9 @@ describe("Jira integration", () => {
 
   it("throws when jira authentication fails", async () => {
     expectCommands(
-      "git config burglekitt.worktree.jira.host",
-      "git config burglekitt.worktree.jira.email",
-      "git config burglekitt.worktree.jira.apiToken",
+      "git config northguild.worktree.jira.host",
+      "git config northguild.worktree.jira.email",
+      "git config northguild.worktree.jira.apiToken",
     );
 
     vi.spyOn(cli, "cmd")
@@ -114,10 +114,10 @@ describe("Jira integration", () => {
 
   it("builds branch names from Jira issue type and configured prefix", async () => {
     expectCommands(
-      "git config burglekitt.worktree.jira.host",
-      "git config burglekitt.worktree.jira.email",
-      "git config burglekitt.worktree.jira.apiToken",
-      "git config burglekitt.worktree.branchPrefix.bugfix",
+      "git config northguild.worktree.jira.host",
+      "git config northguild.worktree.jira.email",
+      "git config northguild.worktree.jira.apiToken",
+      "git config northguild.worktree.branchPrefix.bugfix",
     );
 
     vi.spyOn(cli, "cmd")
@@ -152,9 +152,9 @@ describe("Jira integration", () => {
 
   it("validates Jira credentials against jira.host", async () => {
     expectCommands(
-      "git config burglekitt.worktree.jira.host",
-      "git config burglekitt.worktree.jira.email",
-      "git config burglekitt.worktree.jira.apiToken",
+      "git config northguild.worktree.jira.host",
+      "git config northguild.worktree.jira.email",
+      "git config northguild.worktree.jira.apiToken",
     );
 
     vi.spyOn(cli, "cmd")

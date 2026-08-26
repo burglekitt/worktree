@@ -8,7 +8,7 @@ import remarkGfm from "remark-gfm";
 import { VALID_DOC_ROUTES } from "../docs-routes.generated";
 
 /** GitHub Pages base — strip this prefix if the model accidentally emits full URLs. */
-const GH_PAGES_ORIGIN = "https://burglekitt.github.io/worktree";
+const GH_PAGES_ORIGIN = "https://northguild.github.io/worktree";
 
 /** Allowed external origins. Localhost is included only during development. */
 const ALLOWED_EXTERNAL_ORIGINS: string[] =

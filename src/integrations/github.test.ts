@@ -39,11 +39,11 @@ function makeIssueApiResponse(
   };
 
   return {
-    url: `https://api.github.com/repos/burglekitt/worktree/issues/${number}`,
-    repository_url: "https://api.github.com/repos/burglekitt/worktree",
-    labels_url: `https://api.github.com/repos/burglekitt/worktree/issues/${number}/labels{/name}`,
-    comments_url: `https://api.github.com/repos/burglekitt/worktree/issues/${number}/comments`,
-    events_url: `https://api.github.com/repos/burglekitt/worktree/issues/${number}/events`,
+    url: `https://api.github.com/repos/northguild/worktree/issues/${number}`,
+    repository_url: "https://api.github.com/repos/northguild/worktree",
+    labels_url: `https://api.github.com/repos/northguild/worktree/issues/${number}/labels{/name}`,
+    comments_url: `https://api.github.com/repos/northguild/worktree/issues/${number}/comments`,
+    events_url: `https://api.github.com/repos/northguild/worktree/issues/${number}/events`,
     id: 101,
     node_id: "I_kwDORiPVEM4AAAAA",
     number,
@@ -56,7 +56,7 @@ function makeIssueApiResponse(
     updated_at: "2026-03-22T12:00:00Z",
     closed_at: null,
     author_association: "CONTRIBUTOR",
-    html_url: `https://github.com/burglekitt/worktree/issues/${number}`,
+    html_url: `https://github.com/northguild/worktree/issues/${number}`,
     ...restOverrides,
     type: overrideType === undefined ? defaultType : overrideType,
     user: {
@@ -79,22 +79,22 @@ describe("GitHub integration", () => {
     vi.unstubAllGlobals();
     expectCommands(
       "git remote get-url origin",
-      "git config burglekitt.worktree.github.token",
+      "git config northguild.worktree.github.token",
     );
   });
 
   it.each([
     {
-      remoteUrl: "git@github.com:burglekitt/worktree.git",
-      expected: { owner: "burglekitt", name: "worktree" },
+      remoteUrl: "git@github.com:northguild/worktree.git",
+      expected: { owner: "northguild", name: "worktree" },
     },
     {
-      remoteUrl: "https://github.com/burglekitt/worktree.git",
-      expected: { owner: "burglekitt", name: "worktree" },
+      remoteUrl: "https://github.com/northguild/worktree.git",
+      expected: { owner: "northguild", name: "worktree" },
     },
     {
-      remoteUrl: "https://github.com/burglekitt/worktree",
-      expected: { owner: "burglekitt", name: "worktree" },
+      remoteUrl: "https://github.com/northguild/worktree",
+      expected: { owner: "northguild", name: "worktree" },
     },
   ])("parses GitHub remote url $remoteUrl", ({ remoteUrl, expected }) => {
     expect(parseGitHubRepositoryFromRemote(remoteUrl)).toEqual(expected);
@@ -102,15 +102,15 @@ describe("GitHub integration", () => {
 
   it("throws when the origin remote is not a GitHub repository", () => {
     expect(() =>
-      parseGitHubRepositoryFromRemote("git@gitlab.com:burglekitt/worktree.git"),
+      parseGitHubRepositoryFromRemote("git@gitlab.com:northguild/worktree.git"),
     ).toThrow(
-      'GitHub: Unable to determine the current repository from origin remote "git@gitlab.com:burglekitt/worktree.git".',
+      'GitHub: Unable to determine the current repository from origin remote "git@gitlab.com:northguild/worktree.git".',
     );
   });
 
   it("fetches issue info from the current repository", async () => {
     vi.spyOn(cli, "cmd").mockResolvedValueOnce(
-      "git@github.com:burglekitt/worktree.git",
+      "git@github.com:northguild/worktree.git",
     );
     vi.spyOn(cli, "cmd").mockResolvedValueOnce("");
 
@@ -123,24 +123,24 @@ describe("GitHub integration", () => {
 
     expect(cli.cmd).toHaveBeenCalledWith("git remote get-url origin");
     expect(fetchSpy).toHaveBeenCalledWith(
-      "https://api.github.com/repos/burglekitt/worktree/issues/42",
+      "https://api.github.com/repos/northguild/worktree/issues/42",
       {
         headers: {
           Accept: "application/vnd.github+json",
-          "User-Agent": "@burglekitt/worktree",
+          "User-Agent": "@northguild/worktree",
           "X-GitHub-Api-Version": "2022-11-28",
         },
       },
     );
     expect(issue).toEqual({
-      url: "https://api.github.com/repos/burglekitt/worktree/issues/42",
-      repositoryUrl: "https://api.github.com/repos/burglekitt/worktree",
+      url: "https://api.github.com/repos/northguild/worktree/issues/42",
+      repositoryUrl: "https://api.github.com/repos/northguild/worktree",
       labelsUrl:
-        "https://api.github.com/repos/burglekitt/worktree/issues/42/labels{/name}",
+        "https://api.github.com/repos/northguild/worktree/issues/42/labels{/name}",
       commentsUrl:
-        "https://api.github.com/repos/burglekitt/worktree/issues/42/comments",
+        "https://api.github.com/repos/northguild/worktree/issues/42/comments",
       eventsUrl:
-        "https://api.github.com/repos/burglekitt/worktree/issues/42/events",
+        "https://api.github.com/repos/northguild/worktree/issues/42/events",
       id: 101,
       nodeId: "I_kwDORiPVEM4AAAAA",
       number: 42,
@@ -153,7 +153,7 @@ describe("GitHub integration", () => {
       updatedAt: "2026-03-22T12:00:00Z",
       closedAt: null,
       authorAssociation: "CONTRIBUTOR",
-      htmlUrl: "https://github.com/burglekitt/worktree/issues/42",
+      htmlUrl: "https://github.com/northguild/worktree/issues/42",
       type: {
         id: 1,
         nodeId: "IT_kwDOD8WxkM4AAAAA",
@@ -181,7 +181,7 @@ describe("GitHub integration", () => {
     // Use a pre-configured token so the repo-check step is skipped, and the
     // error comes directly from the issue fetch.
     vi.spyOn(cli, "cmd").mockResolvedValueOnce(
-      "git@github.com:burglekitt/worktree.git",
+      "git@github.com:northguild/worktree.git",
     );
     vi.spyOn(cli, "cmd").mockResolvedValueOnce("ghp_test_token");
 
@@ -196,13 +196,13 @@ describe("GitHub integration", () => {
     );
 
     await expect(fetchGitHubIssue(999)).rejects.toThrow(
-      'GitHub: Failed to fetch issue 999 from burglekitt/worktree. 404 Not Found - {"message":"Not Found"}',
+      'GitHub: Failed to fetch issue 999 from northguild/worktree. 404 Not Found - {"message":"Not Found"}',
     );
   });
 
   it("auto-resolves a token via gh CLI when the repo check fails without a token", async () => {
     const cmdSpy = vi.spyOn(cli, "cmd");
-    cmdSpy.mockResolvedValueOnce("git@github.com:burglekitt/worktree.git"); // git remote get-url origin
+    cmdSpy.mockResolvedValueOnce("git@github.com:northguild/worktree.git"); // git remote get-url origin
     cmdSpy.mockResolvedValueOnce(""); // git config token (no token)
     cmdSpy.mockResolvedValueOnce("ghp_auto_token"); // gh auth token
     cmdSpy.mockResolvedValueOnce(""); // gitSetConfigValue (saving token)
@@ -230,7 +230,7 @@ describe("GitHub integration", () => {
 
     expectCommands(
       "gh auth token",
-      'git config burglekitt.worktree.github.token "ghp_auto_token"',
+      'git config northguild.worktree.github.token "ghp_auto_token"',
     );
 
     const issue = await fetchGitHubIssue(13);
@@ -238,7 +238,7 @@ describe("GitHub integration", () => {
     expect(issue.number).toBe(13);
     expect(cmdSpy).toHaveBeenCalledWith("gh auth token");
     expect(fetchSpy).toHaveBeenCalledWith(
-      "https://api.github.com/repos/burglekitt/worktree/issues/13",
+      "https://api.github.com/repos/northguild/worktree/issues/13",
       {
         headers: expect.objectContaining({
           Authorization: "Bearer ghp_auto_token",

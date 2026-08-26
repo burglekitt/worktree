@@ -1,6 +1,6 @@
-# @burglekitt/worktree — Skill Spec
+# @northguild/worktree — Skill Spec
 
-`@burglekitt/worktree` is a workflow-oriented CLI that wraps `git worktree`
+`@northguild/worktree` is a workflow-oriented CLI that wraps `git worktree`
 commands into a small set of repeatable daily-use tasks. It handles the
 boilerplate of branching, directory creation, env file copying, and editor
 opening so developers don't have to type the same sequences repeatedly.
