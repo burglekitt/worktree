@@ -1,0 +1,8 @@
+# Origin of this standards tree, recorded so `update` can report when upstream has moved.
+# Managed by @baldurpan/create-ai-workflow. Replace this whole directory with:
+#   npx @baldurpan/create-ai-workflow standards add <git-url>
+# Vendored verbatim, with one mechanical rename: npm cannot publish a file called `.gitignore`, so it
+# ships as `templates/_dot_gitignore` and is written back with its leading dot at install time.
+origin=https://github.com/baldurpan/ai-engineering-standards
+ref=dd8b7e206ff46d7555aabb2522c792d9272510b9
+vendored=2026-05-19T22:07:27+00:00

@@ -1,0 +1,97 @@
+---
+name: roadmap
+description: "Print the Tier-1 feature backlog in context/roadmap.md, or append one new pending entry to it. Explicit invocation only — run this when the user types /roadmap. Do NOT match on general planning talk, 'what should we build next', or any request to design, plan, or implement a feature."
+---
+
+# /roadmap
+
+Maintains **Tier 1** — the backlog in `context/roadmap.md`. It never promotes anything, never writes a
+plan, never marks anything `active`, and never removes an entry.
+
+It *may* write a **draft** in `context/drafts/` — raw reference material the user supplied, which
+`/feature-plan` later turns into a plan. Keep that line straight: capturing what someone told you is not
+designing.
+
+Read [`context/workflow.md`](../../../context/workflow.md) for the tier model.
+
+## Usage
+
+```
+/roadmap              # print the backlog — read-only
+/roadmap "some idea"  # append one pending entry
+```
+
+## No arguments — print the backlog
+
+1. Read `context/roadmap.md`.
+2. Print every entry: name, marker, size, the one-line why, and what its **Doc** field points at.
+3. Say which entries have a plan (**Doc** into `plans/`) and which do not. Those are different facts from
+   the `pending`/`active` marker, and reporting them as one is the mistake the two fields exist to prevent.
+4. If nothing is `active`, name `/feature-plan` as the way to get there. **Do not pick a candidate** — that
+   command ranks the backlog and asks.
+
+**Do not** read a plan's ledger or report phase status. That is `/feature-status`. This command answers
+"what is on the list", not "what is next".
+
+## With an argument — append an entry
+
+1. Read `context/roadmap.md` for the existing entries and the format already in the file.
+2. **Check for an entry that already covers the idea.** If one exists, say so, show it, and stop — do not
+   add a near-duplicate. Also check `context/history.md`: an idea previously `dropped` has a recorded
+   reason, and re-proposing it needs that reason addressed, not ignored.
+3. Derive a **kebab-case name**. It becomes the entry's identity and is what `/feature-plan`,
+   `/feature-implement` and `/feature-close` are given later, so make it specific and stable.
+4. Append to the end of the **Features** list, matching the file's format. It is always `pending` — the
+   marker in the heading is the entry's status, and this command never sets any other value:
+
+```markdown
+### <kebab-case-name> — `pending`
+
+<One or two lines: the problem, or what becomes possible. Not a design.>
+
+- **Size:** <small | medium | large> — <what drives the size, a few words>
+- **Doc:** none yet
+```
+
+5. **If the user supplied reference material, capture it** — see below. Otherwise leave `**Doc:** none yet`.
+6. Show the appended entry, and the draft if you wrote one, then stop.
+
+### Capturing reference material
+
+**Capture beats summarise.** When the user gives you more than the idea — a screenshot of documentation, a
+pasted setup guide, a URL, an error dump, a long explanation of how they want it to work — that material
+does not go in the entry and must not be thrown away. Write it to `context/drafts/<NAME>.md` and point the
+entry's **Doc** field at it:
+
+```markdown
+- **Doc:** [`drafts/<NAME>.md`](drafts/<NAME>.md) — <what it is, a few words>
+```
+
+`drafts/` is the right directory and `plans/` is not. A draft is notes: no ledger, no template sections,
+nothing executable. `/feature-plan` moves it into `plans/` when it writes the plan, which is also why you
+never write directly into `plans/` from here.
+
+What to write in it:
+
+- **The specifics that are expensive to re-derive** — exact package names, version or compatibility
+  requirements, config keys, the shape of an API call, the wording of an error.
+- **Where it came from, and when.** A screenshot of vendor docs on a date is worth more than the same facts
+  with no provenance, because docs move.
+- **What it means for *this* repo.** Check the relevant config or source and say what already holds and
+  what would have to change. This is the part a screenshot cannot tell you, and the part that rots slowest.
+- **Never transcribe a credential.** See the standing rule in
+  [`context/workflow.md`](../../../context/workflow.md): a DSN, token or key gets described and pointed at
+  the secret store, never copied into a tracked file.
+
+Keep the entry itself one or two lines regardless.
+
+## Rules
+
+- **One or two lines of why. No more.** If you find yourself writing a third paragraph, that is a signal the
+  idea is ready for `/feature-plan`, not that the entry should be longer.
+- **Never guess at a design.** The entry records that a thing is wanted, not how it would work.
+- **Never mark anything `active`.** Only `/feature-plan --activate` and `/feature-implement` do that.
+- **Never remove an entry.** Entries leave only via `/feature-close`, which records why. Deleting one loses
+  the reason it was dropped, which is the whole point of `history.md`.
+- If the idea is really several ideas, say so and offer to add them as separate entries rather than writing
+  one vague entry covering all of them.
